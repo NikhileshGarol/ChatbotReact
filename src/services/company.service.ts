@@ -21,9 +21,14 @@ export async function createCompanyAdmin(
   tenantCode: string,
   payload: CompanyAdminCreatePayload
 ) {
-  const resp = await api.post<UserOutWithApiKey>(
+  const resp = await api.post<any>(
     `/superadmin/companies/${tenantCode}/admin`,
     payload
   );
+  return resp.data;
+}
+
+export async function getCompanyAdmins() {
+  const resp = await api.get("/superadmin/companies/admins");
   return resp.data;
 }

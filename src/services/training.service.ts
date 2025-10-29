@@ -5,6 +5,7 @@ import type {
   DocumentOut,
   QueryRequest,
   QueryAnswer,
+  WebsiteRequest,
 } from "./types";
 
 export async function uploadDocument(file: File) {
@@ -28,5 +29,20 @@ export async function deleteDocument(document_id: number) {
 
 export async function queryPost(payload: QueryRequest) {
   const resp = await api.post<QueryAnswer>("/query", payload);
+  return resp.data;
+}
+
+export async function uploadWebsite(payload: WebsiteRequest) {
+  const resp = await api.post("/websites/scrape", payload);
+  return resp.data;
+}
+
+export async function listWebsite(params?: { my_docs_only: string }) {
+  const resp = await api.get("/websites", { params });
+  return resp.data;
+}
+
+export async function deleteWebsite(id: number) {
+  const resp = await api.delete(`/websites/${id}`);
   return resp.data;
 }

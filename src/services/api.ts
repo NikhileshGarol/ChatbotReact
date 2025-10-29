@@ -1,73 +1,62 @@
-import axios, { type AxiosInstance } from "axios";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { refreshToken } from "./auth.service";
 
 const API_BASE = "http://127.0.0.1:8000";
 
-export const api: AxiosInstance = axios.create({
+export const api = axios.create({
   baseURL: API_BASE,
-  headers: {
-    Accept: "application/json",
-  },
-  // withCredentials: true, // enable if your backend requires cookies
+  headers: { Accept: "application/json" },
 });
-/**
- * Read persisted auth state from localStorage and map to headers.
- * We intentionally do not import AuthContext into this module to avoid
- * circular dependencies. AuthContext persists state into localStorage.
- */
-function attachAuthHeaders(config: any) {
-  try {
-    const raw = localStorage.getItem("AUTH_STORAGE_V1");
-    if (!raw) return config;
 
-    const auth = JSON.parse(raw);
-
-    // if (!auth || !auth.role) return config;
-
-    if (auth.token || auth.access_token) {
-      const token = auth.token || auth.access_token;
-      config.headers["Authorization"] = `Bearer ${token}`;
-      return config;
-    }
-
-    // if (auth.role === "superadmin") {
-    //   const { username, password } = auth.credentials || {};
-    //   if (username) config.headers["x-username"] = username;
-    //   if (password) config.headers["x-password"] = password;
-    // } else if (auth.role === "admin" || auth.role === "user") {
-    //   const { tenantCode, userCode, apiKey } = auth.credentials || {};
-    //   if (tenantCode) config.headers["X-Tenant-Code"] = tenantCode;
-    //   if (userCode) config.headers["X-User-Code"] = userCode;
-    //   if (apiKey) config.headers["X-API-Key"] = apiKey;
-    // }
-  } catch (err) {
-    // ignore parsing errors
-  }
-  return config;
+function showSessionExpiredPopup() {
+  localStorage.removeItem("AUTH_STORAGE_V1");
+  window.dispatchEvent(new Event("session-expired"));
 }
 
-api.interceptors.request.use(
-  (config) => {
-    config = attachAuthHeaders(config);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+api.interceptors.request.use((config) => {
+  const raw = localStorage.getItem("AUTH_STORAGE_V1");
+  const auth = raw ? JSON.parse(raw) : null;
+  if (auth?.token) {
+    config.headers.Authorization = `Bearer ${auth.token}`;
+  }
+  return config;
+});
 
-/**
- * Generic response interceptor: if 401 -> clear auth and redirect to login.
- * Customize behavior depending on backend 401 response shape.
- */
 api.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const status = error?.response?.status;
-    if (status === 401) {
-      localStorage.removeItem("AUTH_STORAGE_V1");
-      // navigate("/auth/login", { replace: true });
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest?._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const raw = localStorage.getItem("AUTH_STORAGE_V1");
+        const auth = raw ? JSON.parse(raw) : null;
+        if (!auth?.refreshToken) {
+          showSessionExpiredPopup();
+          return Promise.reject(error);
+        }
+
+        // Call refresh token endpoint — define refreshToken yourself
+        const refreshed = await refreshToken(auth.refreshToken); // your refresh call here
+
+        localStorage.setItem(
+          "AUTH_STORAGE_V1",
+          JSON.stringify({
+            ...auth,
+            token: refreshed.access_token,
+            refreshToken: refreshed.refresh_token,
+          })
+        );
+
+        originalRequest.headers.Authorization = `Bearer ${refreshed.access_token}`;
+        return api(originalRequest);
+      } catch (err) {
+        showSessionExpiredPopup();
+        return Promise.reject(err);
+      }
     }
+
     return Promise.reject(error);
   }
 );
-
-export default api;

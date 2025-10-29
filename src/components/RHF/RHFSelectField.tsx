@@ -30,7 +30,12 @@ export default function RHFSelectField({
             {label} <span style={{ color: "#D32F2F" }}>*</span>
           </Typography>
           <FormControl error={!!fieldState.error} fullWidth>
-            <Select {...field}>
+            <Select
+              {...field}
+              MenuProps={{
+                PaperProps: { sx: { maxHeight: 180, maxWidth: 150 } },
+              }}
+            >
               {options?.map((options) => (
                 <MenuItem key={options.value} value={options.value}>
                   {options.label}

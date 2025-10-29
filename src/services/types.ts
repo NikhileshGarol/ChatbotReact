@@ -4,6 +4,10 @@ export type CompanyCreatePayload = {
   name: string;
   tenant_code: string;
   slug_url?: string | null;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
 };
 
 export type CompanyOut = {
@@ -11,6 +15,9 @@ export type CompanyOut = {
   name: string;
   tenant_code: string;
   slug_url: string;
+  email: string;
+  phone: string;
+  address: string;
 };
 
 export type CompanyAdminCreatePayload = {
@@ -18,6 +25,10 @@ export type CompanyAdminCreatePayload = {
   display_name: string;
   user_code: string; // should start with tenant_code
   role: "admin";
+  email: string;
+  address: string;
+  contact_number: string;
+  password: string;
 };
 
 export type UserOutWithApiKey = {
@@ -33,10 +44,10 @@ export type UserCreatePayload = {
   display_name: string;
   user_code: string;
   role: "admin" | "user";
-  email: string,
-  address: string,
-  contact_number: string,
-  password: string,
+  email: string;
+  address: string;
+  contact_number: string;
+  password: string;
 };
 
 export type UserOut = {
@@ -45,6 +56,10 @@ export type UserOut = {
   user_code: string;
   role: string;
   api_key?: string;
+  email: string;
+  address: string;
+  contact_number: string;
+  profile_image: string;
 };
 
 export type UploadResponse = {
@@ -74,6 +89,18 @@ export type QueryRequest = {
 export type QueryAnswer = {
   answer: string;
   sources?: any[];
+};
+
+export type WebsiteRequest = {
+  url: string;
+};
+
+export type RequestResetPassword = {
+  email: string;
+};
+
+export type ResetPassword = {
+  new_password: string;
 };
 
 export type Roles = "superadmin" | "admin" | "user";

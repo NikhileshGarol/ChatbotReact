@@ -34,9 +34,9 @@ export default function TrainManager() {
   const handleRetrain = (job: TrainingJob) => {
     const newJob = retrainJob(job.id);
     if (newJob) {
-      alert(`Retrain job started: ${newJob.id}`);
+      // alert(`Retrain job started: ${newJob.id}`);
     } else {
-      alert('Unable to start retrain job.');
+      // alert('Unable to start retrain job.');
     }
     refresh();
   };

@@ -27,15 +27,7 @@ export default function DeleteDialog({
   id,
 }: Props) {
   return (
-    <Dialog
-      sx={{
-        // "& .MuiPaper-root": {
-        //   minWidth: 400,
-        //   borderRadius: "12px",
-        // },
-      }}
-      open={open}
-    >
+    <Dialog open={open}>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",

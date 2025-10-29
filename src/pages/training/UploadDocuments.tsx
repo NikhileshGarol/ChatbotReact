@@ -1,102 +1,151 @@
-// src/pages/training/UploadDocuments.tsx
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import {
   Box,
   Typography,
-  Paper,
   Button,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   IconButton,
-  Chip,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import UploadDialog from "../../components/training/UploadDialog";
 import { useAuth } from "../../contexts/AuthContext";
-import {
-  getDocumentsForUser,
-  startTrainingForUser,
-  getJobsForUser,
-} from "../../store/trainingMock";
 import DeleteIcon from "@mui/icons-material/Delete";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import LogsDialog from "../../components/training/LogsDialog";
 import PreviewDialog from "../../components/training/PreviewDialog";
-import DownloadIcon from "@mui/icons-material/Download";
 import type { TrainingJob, TrainingDocument } from "../../store/trainingMock";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
-import { deleteDocument, listDocuments } from "../../services/training.service";
+import {
+  deleteDocument,
+  deleteWebsite,
+  listDocuments,
+  listWebsite,
+  uploadWebsite,
+} from "../../services/training.service";
 import type { DocumentOut } from "../../services/types";
 import CustomTable from "../../components/CustomTable";
 import type { GridColDef } from "@mui/x-data-grid";
-import type { User } from "../../store/mockData";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function UploadDocuments() {
   const { user } = useAuth();
+  const { showSnackbar } = useSnackbar();
   const [openUpload, setOpenUpload] = useState(false);
   const [docs, setDocs] = useState<DocumentOut[]>([]);
-  const [jobs, setJobs] = useState<any[]>([]);
   const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
   const [logsOpen, setLogsOpen] = useState(false);
-
   const [previewDoc, setPreviewDoc] = useState<TrainingDocument | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [websites, setWebsites] = useState([]);
+  const [deleteType, setDeleteType] = useState<string | "document" | "website">(
+    ""
+  );
+  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [scopeUserId, setScopeUserId] = useState<string | "all" | "me">("all");
 
   useEffect(() => {
-    refresh();
-  }, [scopeUserId]);
-
-  // useEffect(() => {
-  //   refresh();
-  //   const t = setInterval(refresh, 1200);
-  //   return () => clearInterval(t);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [scopeUserId, user]);
+    if (tabIndex === 1) {
+      fetchWebsites();
+    } else if (tabIndex === 0) {
+      refresh();
+    }
+  }, [tabIndex, scopeUserId]);
 
   const refresh = async () => {
     if (!user) return;
     try {
+      setLoading(true);
       const myDocsOnly = scopeUserId === "all" ? "false" : "true";
       const documents = await listDocuments({ my_docs_only: myDocsOnly });
       setDocs(documents);
-      setJobs(documents);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
-    // const uid = scopeUserId === "all" ? undefined : scopeUserId ?? user.id;
-    // setDocs(getDocumentsForUser(uid) as TrainingDocument[]);
-    // setJobs(getJobsForUser(uid) as TrainingJob[]);
   };
 
-  const onUploaded = () => refresh();
+  const fetchWebsites = async () => {
+    const myDocsOnly = scopeUserId === "all" ? "false" : "true";
+    try {
+      setLoading(true);
+      const response = await listWebsite({ my_docs_only: myDocsOnly });
+      setWebsites(response);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleDelete = (id: number) => {
-    console.log(id);
+  const handleWebsiteUpload = async (websiteUrl: string) => {
+    console.log(websiteUrl);
+    setIsLoading(true);
+    const payload = {
+      url: websiteUrl,
+    };
+    try {
+      await uploadWebsite(payload);
+      showSnackbar("success", "Website uploaded successfully");
+      setIsLoading(false);
+      setWebsiteDialogOpen(false);
+      setTabIndex(1);
+    } catch (e: any) {
+      const message = e?.response.data.detail || "something went wrong";
+      showSnackbar("error", message);
+      console.log(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onUploaded = () => {
+    setTabIndex(0);
+  };
+
+  const handleDelete = (id: number, type: "document" | "website") => {
     setOpenDeleteDialog(true);
     setSelectedRow(id);
+    setDeleteType(type);
   };
 
   const confirmDelete = () => {
-    handleDeleteDocument();
+    if (deleteType === "document") {
+      handleDeleteDocument();
+    } else {
+      handleDeletWebsite();
+    }
+  };
+
+  const handleDeletWebsite = async () => {
+    try {
+      const resp = await deleteWebsite(selectedRow);
+      setOpenDeleteDialog(false);
+      setSelectedRow(null);
+      setDeleteType("");
+      fetchWebsites();
+      console.log(resp);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDeleteDocument = async () => {
@@ -104,6 +153,7 @@ export default function UploadDocuments() {
       const resp = await deleteDocument(selectedRow);
       setOpenDeleteDialog(false);
       setSelectedRow(null);
+      setDeleteType("");
       refresh();
       console.log(resp);
     } catch (error) {
@@ -111,54 +161,118 @@ export default function UploadDocuments() {
     }
   };
 
-  const handleStartTraining = (docId: string) => {
-    if (!user) return;
-    startTrainingForUser(user.id, [docId]);
-    refresh();
+  // const handleStartTraining = (docId: string) => {
+  //   if (!user) return;
+  //   startTrainingForUser(user.id, [docId]);
+  //   refresh();
+  // };
+
+  // const handleViewLogs = (jobId: string) => {
+  //   const job = getJobsForUser(undefined).find((j) => j.id === jobId) ?? null;
+  //   setSelectedJob(job);
+  //   setLogsOpen(true);
+  // };
+
+  // const handlePreview = (doc: any) => {
+  //   setPreviewDoc(doc);
+  //   setPreviewOpen(true);
+  // };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
   };
 
-  const handleViewLogs = (jobId: string) => {
-    const job = getJobsForUser(undefined).find((j) => j.id === jobId) ?? null;
-    setSelectedJob(job);
-    setLogsOpen(true);
-  };
-
-  const handlePreview = (doc: any) => {
-    setPreviewDoc(doc);
-    setPreviewOpen(true);
-  };
-
-  const handleDownload = (doc: any) => {
-    if (!doc.contentBase64) {
-      alert("No file content available to download.");
-      return;
-    }
-    try {
-      const byteCharacters = atob(doc.contentBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const mime = doc.mimeType ?? "application/octet-stream";
-      const blob = new Blob([byteArray], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = doc.filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to download file.");
-    }
-  };
+  // const handleDownload = (doc: any) => {
+  //   if (!doc.contentBase64) {
+  //     alert("No file content available to download.");
+  //     return;
+  //   }
+  //   try {
+  //     const byteCharacters = atob(doc.contentBase64);
+  //     const byteNumbers = new Array(byteCharacters.length);
+  //     for (let i = 0; i < byteCharacters.length; i++) {
+  //       byteNumbers[i] = byteCharacters.charCodeAt(i);
+  //     }
+  //     const byteArray = new Uint8Array(byteNumbers);
+  //     const mime = doc.mimeType ?? "application/octet-stream";
+  //     const blob = new Blob([byteArray], { type: mime });
+  //     const url = URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = doc.filename;
+  //     a.click();
+  //     URL.revokeObjectURL(url);
+  //   } catch (e) {
+  //     console.error(e);
+  //     alert("Failed to download file.");
+  //   }
+  // };
 
   const isAdmin = user?.role === "admin";
+  const isSuperAdmin = user?.role === "superadmin";
 
   const columns: GridColDef[] = [
-    { field: "filename", headerName: "Title" },
+    {
+      field: "filename",
+      headerName: "Title",
+      valueGetter: (params) => {
+        return params || "-";
+      },
+    },
     { field: "original_name", headerName: "File Name" },
+    { field: "user_code", headerName: "Usercode" },
+    {
+      field: "created_at",
+      headerName: "Uploaded At",
+      renderCell: (params) => {
+        const date = params?.row?.created_at;
+        const localFormatted = dayjs
+          .utc(date)
+          .local()
+          .format("DD-MM-YYYY hh:mm A");
+
+        return <span>{localFormatted}</span>;
+      },
+    },
+    // { field: "status", headerName: "Status" },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params) => {
+        const row = params.row;
+        return (
+          <>
+            {/* <IconButton
+              size="small"
+              onClick={() => handlePreview(row)}
+              title="Preview"
+            >
+              <VisibilityIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={() => handleDownload(row)}
+              title="Download"
+            >
+              <DownloadIcon />
+            </IconButton> */}
+            <IconButton
+              size="small"
+              onClick={() => handleDelete(row.id, "document")}
+              title="Delete"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </>
+        );
+      },
+    },
+  ];
+
+  const websiteColumns: GridColDef[] = [
+    { field: "title", headerName: "Title" },
+    { field: "url", headerName: "Webite URL" },
     { field: "uploader_id", headerName: "Uploaded By" },
     {
       field: "created_at",
@@ -182,7 +296,7 @@ export default function UploadDocuments() {
         const row = params.row;
         return (
           <>
-            <IconButton
+            {/* <IconButton
               size="small"
               onClick={() => handlePreview(row)}
               title="Preview"
@@ -196,10 +310,10 @@ export default function UploadDocuments() {
               title="Download"
             >
               <DownloadIcon />
-            </IconButton>
+            </IconButton> */}
             <IconButton
               size="small"
-              onClick={() => handleDelete(row.id)}
+              onClick={() => handleDelete(row.id, "website")}
               title="Delete"
             >
               <DeleteIcon />
@@ -223,8 +337,14 @@ export default function UploadDocuments() {
         >
           <Typography variant="h6">Documents & Training (Per User)</Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button variant="outlined" onClick={() => setOpenUpload(true)}>
+            <Button variant="contained" onClick={() => setOpenUpload(true)}>
               Upload document
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setWebsiteDialogOpen(true)}
+            >
+              Upload Website
             </Button>
             {/* <Button
               variant="contained"
@@ -248,7 +368,7 @@ export default function UploadDocuments() {
           </Box>
         </Box>
 
-        {isAdmin && (
+        {(isAdmin || isSuperAdmin) && (
           <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel id="scope-label">Scope</InputLabel>
@@ -262,17 +382,26 @@ export default function UploadDocuments() {
                 <MenuItem value="all">All users</MenuItem>
               </Select>
             </FormControl>
-            <Typography variant="body2" color="text.secondary">
+            {/* <Typography variant="body2" color="text.secondary">
               As Admin you can view all users when selecting "All users".
-            </Typography>
+            </Typography> */}
           </Box>
         )}
 
         {/* <Paper sx={{ p: 2, mb: 3 }}> */}
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+        {/* <Typography variant="subtitle1" sx={{ mb: 1 }}>
           Uploaded Documents
-        </Typography>
-        {/* <Table size="small">
+        </Typography> */}
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          aria-label="Documents and Websites Tabs"
+        >
+          <Tab label="Uploaded Documents" />
+          <Tab label="Uploaded Websites" />
+        </Tabs>
+        <Box sx={{ mt: 2 }}>
+          {/* <Table size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
@@ -358,7 +487,21 @@ export default function UploadDocuments() {
               )}
             </TableBody>
           </Table> */}
-        <CustomTable gridRows={docs} columns={columns} />
+          {tabIndex === 0 && (
+            <CustomTable
+              isLoading={loading}
+              gridRows={docs}
+              columns={columns}
+            />
+          )}
+          {tabIndex === 1 && (
+            <CustomTable
+              isLoading={loading}
+              gridRows={websites}
+              columns={websiteColumns}
+            />
+          )}
+        </Box>
         {/* </Paper> */}
 
         {/* <Paper sx={{ p: 2 }}>
@@ -441,6 +584,12 @@ export default function UploadDocuments() {
         open={previewOpen}
         doc={previewDoc ?? undefined}
         onClose={() => setPreviewOpen(false)}
+      />
+      <WebsiteUploadDialog
+        open={websiteDialogOpen}
+        onClose={() => setWebsiteDialogOpen(false)}
+        onSubmit={handleWebsiteUpload}
+        isLoading={isLoading}
       />
     </AdminLayout>
   );

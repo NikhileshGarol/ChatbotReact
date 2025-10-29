@@ -4,9 +4,8 @@ import RHFTextField from "../../components/RHF/RHFTextField";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import RHFCheckboxField from "../../components/RHF/RHFCheckboxField";
 
 const schema = yup
   .object({
@@ -19,7 +18,7 @@ const schema = yup
 export default function LoginPage() {
   const methods = useForm({ resolver: yupResolver(schema) });
   const { handleSubmit } = methods;
-  const auth = useAuth();
+  const { user, userLogin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const onSubmit = async (data: {
@@ -27,32 +26,22 @@ export default function LoginPage() {
     password: string;
     checked?: boolean | null;
   }) => {
-    const user = await auth.userLogin(
-      data.email,
-      data.password,
-      !!data.checked
-    );
-    console.log("userResp", user);
-    // const user = await auth.login(data.email, data.password);
-    // // Redirect based on role
-    // if (user?.role === "admin") {
-    //   navigate("/admin", { replace: true });
-    // } else {
-    //   navigate("/upload", { replace: true });
-    // }
+    await userLogin(data.email, data.password, !!data.checked);
   };
 
   // Redirect logged-in users
   useEffect(() => {
-    if (auth.isAuthenticated && auth.user) {
+    if (isAuthenticated && user) {
       // Redirect based on role
-      if (auth.user.role === "admin") {
-        navigate("/admin", { replace: true });
+      if (user.role === "admin") {
+        navigate("/admin/users", { replace: true });
+      } else if (user.role === "superadmin") {
+        navigate("/admin/companies", { replace: true });
       } else {
         navigate("/upload", { replace: true });
       }
     }
-  }, [auth.isAuthenticated, auth.user, navigate]);
+  }, [user]);
 
   return (
     <Box
@@ -72,7 +61,6 @@ export default function LoginPage() {
             <RHFTextField name="email" label="Email" />
             <Box sx={{ height: 12 }} />
             <RHFTextField name="password" label="Password" type="password" />
-            <RHFCheckboxField name="checked" title="Login as Super Admin" />
             <Box
               sx={{
                 mt: 2,

@@ -8,16 +8,25 @@ import theme from "./theme/muiTheme";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import "./index.css";
+import { SnackbarProvider } from "./contexts/SnackbarContext";
+import { SessionProvider } from "./contexts/SessionContext";
+import SessionExpiredDialog from "./components/SessionExpiredDialog";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <App />
-        </ThemeProvider>
-      </AuthProvider>
+      <SessionProvider>
+        {/* <SessionListener /> */}
+        <SessionExpiredDialog />
+        <SnackbarProvider>
+          <AuthProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <App />
+            </ThemeProvider>
+          </AuthProvider>
+        </SnackbarProvider>
+      </SessionProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,46 +1,104 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import { Typography, Box, Button, IconButton } from "@mui/material";
+import { Typography, Box, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { type GridColDef, type GridRowsProp } from "@mui/x-data-grid";
-import {
-  getUsers,
-  addUser,
-  updateUser,
-  deleteUser,
-  getCompanies,
-  type User,
-} from "../../store/mockData";
+import { type User } from "../../store/mockData";
 import UserDialog from "../../components/dialogs/UserDialog";
 import CustomTable from "../../components/CustomTable";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import { useAuth } from "../../contexts/AuthContext";
 import { createUser, listUsers } from "../../services/user.service";
+import {
+  createCompanyAdmin,
+  getCompanyAdmins,
+} from "../../services/company.service";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 export default function UserList() {
   const { user } = useAuth();
+  const { showSnackbar } = useSnackbar();
   const [rows, setRows] = useState<any[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const isSuperAdmin = user?.role === "superadmin";
+  const calledRef = useRef(false);
 
   useEffect(() => {
-    setRows(getUsers());
-    refresh();
+    if (calledRef.current) return;
+    calledRef.current = true;
+
+    if (isSuperAdmin) {
+      listAllAdminUsers();
+    } else {
+      refresh();
+    }
   }, []);
 
   const refresh = async () => {
     try {
+      setLoading(true);
       const resp = await listUsers();
       console.log(resp);
       setRows(resp);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
-    // setRows(resp);
+  };
+
+  const listAllAdminUsers = async () => {
+    try {
+      setLoading(true);
+      const resp = await getCompanyAdmins();
+      setRows(resp);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateUser = async (data: any) => {
+    const tenantCode = data?.tenant_code;
+    const payload = {
+      ...data,
+      user_code: tenantCode + "-" + data.user_code,
+    };
+    try {
+      const response = await createUser(payload);
+      setRows(response);
+      showSnackbar("success", "User created successfully");
+      setOpenDialog(false);
+      refresh();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+      console.log(error);
+    }
+  };
+
+  const handleCreateAdminUser = async (data: any) => {
+    const tenantCode = data?.tenant_code;
+    const payload = {
+      ...data,
+      user_code: tenantCode + "-" + data.user_code,
+    };
+    try {
+      const response = await createCompanyAdmin(tenantCode, payload);
+      setRows(response);
+      showSnackbar("success", "User created successfully");
+      setOpenDialog(false);
+      listAllAdminUsers();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+      console.log(error);
+    }
   };
 
   const handleAdd = () => {
@@ -48,41 +106,30 @@ export default function UserList() {
     setOpenDialog(true);
   };
 
-  const handleEdit = (row: User) => {
-    setEditing(row);
-    setOpenDialog(true);
-  };
+  // const handleEdit = (row: User) => {
+  //   setEditing(row);
+  //   setOpenDialog(true);
+  // };
 
-  const handleDelete = (row: User) => {
-    setToDelete(row);
-    setDeleteConfirmOpen(true);
-  };
+  // const handleDelete = (row: User) => {
+  //   setToDelete(row);
+  //   setDeleteConfirmOpen(true);
+  // };
 
   const confirmDelete = () => {
     if (!toDelete) return;
-    deleteUser(toDelete.id);
     setDeleteConfirmOpen(false);
     setToDelete(null);
     refresh();
   };
 
-  const handleSave = async (data: any) => {
-    const payload = {
-      ...data,
-      user_code: data?.tenant_code + "-" + data.user_code,
-    };
-
+  const handleSave = (data: any) => {
     if (editing) {
-      updateUser(editing.id, data);
     } else {
-      const resp = await createUser(payload);
-      console.log("userCreate", resp);
+      !isSuperAdmin ? handleCreateUser(data) : handleCreateAdminUser(data);
     }
     refresh();
   };
-
-  const companies = getCompanies();
-  const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.name]));
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -99,50 +146,52 @@ export default function UserList() {
         },
       },
       {
-        field: "address",
+        field: "company_name",
         headerName: "Company",
         width: 180,
         // valueGetter: (params: any) => {
         //   return companyMap[params] || "-";
         // },
       },
-      {
-        field: "status",
-        headerName: "Status",
-        width: 110,
-        renderCell: (params: any) => {
-          const isActive = params.row.status === "active" ? true : false;
-          return (
-            <span style={{ color: isActive ? "green" : "red" }}>
-              {isActive ? "Active" : "InActive"}
-            </span>
-          );
-        },
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        width: 140,
-        sortable: false,
-        renderCell: (params) => {
-          const row = params.row as User;
-          return (
-            <>
-              <IconButton size="small" onClick={() => handleEdit(row)}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => handleDelete(row)}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </>
-          );
-        },
-      },
+      // {
+      //   field: "status",
+      //   headerName: "Status",
+      //   width: 110,
+      //   renderCell: (params: any) => {
+      //     const isActive = params.row.status === "active" ? true : false;
+      //     return (
+      //       <span style={{ color: isActive ? "green" : "red" }}>
+      //         {isActive ? "Active" : "InActive"}
+      //       </span>
+      //     );
+      //   },
+      // },
+      // {
+      //   field: "actions",
+      //   headerName: "Actions",
+      //   width: 140,
+      //   sortable: false,
+      //   renderCell: (params) => {
+      //     const row = params.row as User;
+      //     return (
+      //       <>
+      //         <IconButton size="small" onClick={() => handleEdit(row)}>
+      //           <EditIcon fontSize="small" />
+      //         </IconButton>
+      //         <IconButton size="small" onClick={() => handleDelete(row)}>
+      //           <DeleteIcon fontSize="small" />
+      //         </IconButton>
+      //       </>
+      //     );
+      //   },
+      // },
     ],
-    [companyMap]
+    []
   );
 
-  const gridRows: GridRowsProp = rows.map((r: any) => ({ id: r.id, ...r }));
+  const gridRows: GridRowsProp = Array.isArray(rows)
+    ? rows.map((r) => ({ id: r.id, ...r }))
+    : [];
 
   return (
     <AdminLayout>
@@ -157,18 +206,13 @@ export default function UserList() {
         >
           <Typography variant="h6">Users</Typography>
           <Button
-            startIcon={<AddIcon />}
             variant="contained"
             onClick={handleAdd}
           >
             Add user
           </Button>
         </Box>
-
-        {/* <Paper sx={{ height: 520 }}> */}
-        {/* <DataGrid rows={gridRows} columns={columns} pageSizeOptions={[5, 10, 25]} initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }} /> */}
-        <CustomTable gridRows={gridRows} columns={columns} />
-        {/* </Paper> */}
+        <CustomTable isLoading={loading} gridRows={gridRows} columns={columns} />
       </Box>
 
       <UserDialog

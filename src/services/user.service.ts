@@ -1,9 +1,8 @@
-// src/services/user.service.ts
 import { api } from "./api";
 import type { UserCreatePayload, UserOut } from "./types";
 
 export async function createUser(payload: UserCreatePayload) {
-  const resp = await api.post<UserOut>("/users", payload);
+  const resp = await api.post<any>("/users", payload);
   return resp.data;
 }
 
@@ -14,6 +13,32 @@ export async function listUsers() {
 
 export async function getCurrentUser() {
   const resp = await api.get<UserOut>("/users/me");
+  return resp.data;
+}
+
+export async function updateCurrentUser(payload: any) {
+  const resp = await api.put("/users/me", payload);
+  return resp.data;
+}
+
+export async function postUserImage(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const resp = await api.post<any>("/users/me/image", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return resp.data;
+}
+
+export async function getUserImage() {
+  const resp = await api.get("/users/me/image", {
+    responseType: "blob", // important to get raw binary Blob
+  });
+  return resp.data; // returns Blob
+}
+
+export async function deleteUserImage() {
+  const resp = await api.delete("/users/me/image");
   return resp.data;
 }
 

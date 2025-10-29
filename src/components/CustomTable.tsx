@@ -3,9 +3,10 @@ import { DataGrid } from "@mui/x-data-grid";
 type Props = {
   gridRows: readonly any[];
   columns: readonly any[];
+  isLoading?: boolean;
 };
 
-export default function CustomTable({ gridRows, columns }: Props) {
+export default function CustomTable({ gridRows, columns, isLoading }: Props) {
   const column = columns.map((col) => ({
     ...col,
     flex: col.flex ?? 1, // auto-adjust width based on available space
@@ -18,6 +19,7 @@ export default function CustomTable({ gridRows, columns }: Props) {
       columns={column}
       pageSizeOptions={[5, 10, 25]}
       disableRowSelectionOnClick
+      loading={isLoading}
       initialState={{
         pagination: { paginationModel: { pageSize: 10, page: 0 } },
       }}

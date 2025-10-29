@@ -12,9 +12,8 @@ import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import RHFTextField from "../RHF/RHFTextField";
 import { companySchema } from "../../validation/companySchema";
-import { isCompanyUrlAvailable, type Company } from "../../store/mockData";
+import { type Company } from "../../store/mockData";
 import { GridCloseIcon } from "@mui/x-data-grid";
-import RHFSwitchField from "../RHF/RHFSwitchField";
 
 type Props = {
   open: boolean;
@@ -37,8 +36,9 @@ export default function CompanyDialog({
       phone: "",
       website: "",
       address: "",
-      url: "",
-      status: "active" as "active" | "inactive",
+      slug_url: "",
+      tenant_code: "",
+      // status: "active" as "active" | "inactive",
     },
   });
 
@@ -52,43 +52,21 @@ export default function CompanyDialog({
         phone: "",
         website: "",
         address: "",
-        url: "",
-        status: "active",
+        slug_url: "",
+        tenant_code: "",
+        // status: "active",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial, open]);
 
-  const { handleSubmit, watch, setError, clearErrors } = methods;
-
-  const watchedUrl = watch("url");
-
-  // perform client-side uniqueness check when URL changes
-  useEffect(() => {
-    if (!watchedUrl) return;
-    const isAvailable = isCompanyUrlAvailable(watchedUrl, initial?.id);
-    if (!isAvailable) {
-      setError("url", { type: "manual", message: "URL already taken" });
-    } else {
-      clearErrors("url");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchedUrl]);
+  const { handleSubmit } = methods;
 
   const submit = (data: any) => {
-    // final check
-    const available = isCompanyUrlAvailable(data.url, initial?.id);
-    if (!available) {
-      setError("url", { type: "manual", message: "URL already taken" });
-      return;
-    }
     onSave(data);
-    console.log(data);
-    onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} fullWidth maxWidth="sm">
       <DialogTitle
         sx={{
           display: "flex",
@@ -106,31 +84,40 @@ export default function CompanyDialog({
       </DialogTitle>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(submit)}>
-          <DialogContent>
+          <DialogContent
+            sx={{
+              overflowY: "auto",
+              maxHeight: "70vh", // scrollable area height
+              paddingRight: 2,
+            }}
+          >
             <Grid container spacing={2} sx={{ mb: 1 }}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <RHFTextField name="name" label="Company Name" />
+                <RHFTextField name="name" label="Company Name" placeholder="Company name" />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <RHFTextField name="email" label="Contact Email" />
+                <RHFTextField name="email" label="Contact Email" placeholder="Email" />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <RHFTextField name="phone" label="Phone" />
+                <RHFTextField name="phone" label="Phone" placeholder="Phone" />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <RHFTextField name="website" label="Website" />
+                <RHFTextField name="website" label="Website" placeholder="https://example.com" />
               </Grid>
               <Grid size={{ xs: 12, sm: 12 }}>
-                <RHFTextField name="address" label="Address" />
+                <RHFTextField name="address" label="Address" placeholder="Address" />
               </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <RHFTextField name="url" label="Company URL" />
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <RHFTextField name="tenant_code" label="Tenant Code" placeholder="Tenant code" />
               </Grid>
-              {initial && (
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <RHFTextField name="slug_url" label="Slug URL" placeholder="https://example/demo" />
+              </Grid>
+              {/* {initial && (
                 <Grid sx={{ ml: 2 }} size={{ xs: 12, sm: 2 }}>
                   <RHFSwitchField name="status" label="Status" />
                 </Grid>
-              )}
+              )} */}
             </Grid>
           </DialogContent>
 

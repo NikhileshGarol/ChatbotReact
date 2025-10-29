@@ -10,7 +10,6 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
-import FloatingChat from "../components/FloatingChat";
 
 const drawerWidth = 200;
 const collapsedWidth = 72;
@@ -53,7 +52,7 @@ export default function AdminLayout({
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Role — {roleLabel}
+            {roleLabel} - {user?.display_name}
           </Typography>
           <Header />
         </Toolbar>
@@ -71,11 +70,11 @@ export default function AdminLayout({
           flexGrow: 1,
           p: 3,
           width: `calc(100% - ${drawerOpen ? drawerWidth : collapsedWidth}px)`,
-          marginLeft: `${drawerOpen ? drawerWidth : collapsedWidth}px`, // aligns main content with drawer
-          transition: "width 0.3s, margin-left 0.3s", // smooth animation
+          marginLeft: `${drawerOpen ? drawerWidth : collapsedWidth}px`,
+          transition: "width 0.3s, margin-left 0.3s",
         }}
       >
-        <Toolbar /> {/* toolbar spacer */}
+        <Toolbar />
         {children}
       </Box>
     </Box>

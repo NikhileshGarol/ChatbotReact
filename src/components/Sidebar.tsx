@@ -6,12 +6,15 @@ import ListItemText from "@mui/material/ListItemText";
 import HomeIcon from "@mui/icons-material/Home";
 import BusinessIcon from "@mui/icons-material/Business";
 import PeopleIcon from "@mui/icons-material/People";
-import StorageIcon from "@mui/icons-material/Storage";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
-type Props = { open: boolean; drawerWidth: number; role: "admin" | "user" };
+type Props = {
+  open: boolean;
+  drawerWidth: number;
+  role: "admin" | "user" | "superadmin";
+};
 
 export default function Sidebar({ open, drawerWidth, role }: Props) {
   const location = useLocation();
@@ -20,7 +23,7 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
 
   // Role-based items
   const baseNavItems = [
-    { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
+    // { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
     {
       label: "Companies",
       icon: <BusinessIcon />,
@@ -31,7 +34,7 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
   ];
 
   const adminNavItems = [
-    { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
+    // { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
     { label: "Users", icon: <PeopleIcon />, path: "/admin/users" },
     { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
   ];
@@ -40,28 +43,12 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
     { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
   ];
 
-  const navItems = role
-    ? role == "admin"
+  const navItems =
+    role && role === "admin"
       ? adminNavItems
-      : userNavItems
-    : baseNavItems;
-
-  // const navItems = [
-  //   ...(role === "admin"
-  //     ? [
-  //         { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
-  //         // {
-  //         //   label: "Companies",
-  //         //   icon: <BusinessIcon />,
-  //         //   path: "/admin/companies",
-  //         // },
-  //         { label: "Users", icon: <PeopleIcon />, path: "/admin/users" },
-  //       ]
-  //     : []),
-  //   { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
-  //   // { label: "Training", icon: <StorageIcon />, path: "/training" },
-  //   // { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
-  // ];
+      : role === "superadmin"
+      ? baseNavItems
+      : userNavItems;
 
   return (
     <Drawer
@@ -97,16 +84,6 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
           </ListItemButton>
         ))}
       </List>
-      {/* <Box sx={{ flexGrow: 1 }} /> */}
-      {/* <Divider />
-      <List>
-        <ListItemButton sx={{ py: 1.25 }} onClick={() => navigate('/auth/login')}>
-          <ListItemIcon>
-            <PeopleIcon />
-          </ListItemIcon>
-          {open && <ListItemText primary="Switch account" />}
-        </ListItemButton>
-      </List> */}
     </Drawer>
   );
 }
