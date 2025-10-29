@@ -3,12 +3,13 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import HomeIcon from "@mui/icons-material/Home";
+import LogoutIcon from "@mui/icons-material/Logout";
 import BusinessIcon from "@mui/icons-material/Business";
 import PeopleIcon from "@mui/icons-material/People";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import { useAuth } from "../contexts/AuthContext";
 
 type Props = {
   open: boolean;
@@ -20,6 +21,7 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { Logout } = useAuth();
 
   // Role-based items
   const baseNavItems = [
@@ -31,16 +33,19 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
     },
     { label: "Users", icon: <PeopleIcon />, path: "/admin/users" },
     { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
+    { label: "Logout", icon: <LogoutIcon />, path: "/auth/login" },
   ];
 
   const adminNavItems = [
     // { label: "Dashboard", icon: <HomeIcon />, path: "/admin" },
     { label: "Users", icon: <PeopleIcon />, path: "/admin/users" },
     { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
+    { label: "Logout", icon: <LogoutIcon />, path: "/auth/login" },
   ];
 
   const userNavItems = [
     { label: "Upload", icon: <CloudUploadIcon />, path: "/upload" },
+    { label: "Logout", icon: <LogoutIcon />, path: "/auth/login" },
   ];
 
   const navItems =
@@ -49,6 +54,15 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
       : role === "superadmin"
       ? baseNavItems
       : userNavItems;
+
+  const handleNavigate = (path: string) => {
+    if (path === "/auth/login") {
+      Logout();
+      navigate(path);
+    } else {
+      navigate(path);
+    }
+  };
 
   return (
     <Drawer
@@ -77,7 +91,7 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
             key={it.path}
             selected={location.pathname === it.path}
             sx={{ py: 1.25 }}
-            onClick={() => navigate(it.path)}
+            onClick={() => handleNavigate(it.path)}
           >
             <ListItemIcon>{it.icon}</ListItemIcon>
             {open && <ListItemText primary={it.label} />}
