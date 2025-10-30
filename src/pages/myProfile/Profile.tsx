@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -16,12 +16,15 @@ import AdminLayout from "../../layouts/AdminLayout";
 import * as yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import {
+  getCurrentUser,
   getUserImage,
   postUserImage,
   updateCurrentUser,
 } from "../../services/user.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { City, Country, State } from "country-state-city";
+import RHFSelectField from "../../components/RHF/RHFSelectField";
 
 const schema = yup.object({
   display_name: yup.string().required("Name is required"),
@@ -31,6 +34,11 @@ const schema = yup.object({
     .required("Phone number is required")
     .matches(/^\+?[0-9\- ]{10,}$/, "Invalid phone number"),
   address: yup.string().notRequired(),
+  country: yup.string().required("Country is required"),
+  state: yup.string().required("State is required"),
+  city: yup.string().required("City is required"),
+  firstname: yup.string().required("First name is required"),
+  lastname: yup.string().required("Last name is required"),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -40,31 +48,101 @@ const Profile: React.FC = () => {
   const { showSnackbar } = useSnackbar();
   const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  // Initialize form with default values from user (example hardcoded)
+  const isInitialLoad = useRef(true);
   const defaultValues: FormData = {
     display_name: user.display_name,
     email: user.email,
     contact_number: user.contact_number,
     address: user.address,
+    country: user.country,
+    state: user.state,
+    city: user.city,
+    firstname: user.firstname,
+    lastname: user.lastname,
   };
+  // State to store options
+  const [countryOptions, setCountryOptions] = useState(
+    Country.getAllCountries().map((c) => ({
+      label: c.name,
+      value: c.isoCode,
+    }))
+  );
+  const [stateOptions, setStateOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [cityOptions, setCityOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
+  useEffectOnce(() => {
+    getProfileImage();
+    getUserDetails();
+  });
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema) as unknown as Resolver<FormData>,
     defaultValues,
   });
 
-  useEffectOnce(() => {
-    getProfileImage();
-  });
+  const {
+    handleSubmit,
+    watch,
+    formState: { isSubmitting },
+  } = methods;
+
+  const selectedCountry = watch("country");
+  const selectedState = watch("state");
+
+  useEffect(() => {
+    if (selectedCountry) {
+      const states = State.getStatesOfCountry(selectedCountry).map((s) => ({
+        label: s.name,
+        value: s.isoCode,
+      }));
+      setStateOptions(states);
+      if (isInitialLoad.current) {
+        // Initial load from API, do NOT reset the form fields
+        isInitialLoad.current = false;
+      } else {
+        // User changed the country, reset dependent fields
+        methods.setValue("state", "");
+        setCityOptions([]);
+        methods.setValue("city", "");
+      }
+    }
+  }, [selectedCountry, methods]);
+
+  useEffect(() => {
+    if (selectedState && selectedCountry) {
+      const cities = City.getCitiesOfState(selectedCountry, selectedState).map(
+        (ci) => ({
+          label: ci.name,
+          value: ci.name,
+        })
+      );
+      setCityOptions(cities);
+      if (!selectedState) {
+        methods.setValue("city", "");
+      }
+    }
+  }, [selectedState, selectedCountry, methods]);
 
   const getProfileImage = async () => {
     try {
       const response = await getUserImage(); // response is a Blob
       const objectUrl = URL.createObjectURL(response);
       setPreview(objectUrl);
-      refreshProfileImage();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const getUserDetails = async () => {
+    try {
+      const response = await getCurrentUser();
+      methods.reset(response);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -79,11 +157,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = methods;
-
   const onSubmit = async (data: any) => {
     try {
       if (avatarFile) {
@@ -94,6 +167,7 @@ const Profile: React.FC = () => {
       console.log(response);
       setUser(response);
       showSnackbar("success", "Profile details updated successfully");
+      refreshProfileImage();
     } catch (error: any) {
       const message = error?.response?.data?.detail || "Something went wrong";
       showSnackbar("error", message);
@@ -113,13 +187,49 @@ const Profile: React.FC = () => {
               <Grid container spacing={2}>
                 <Grid container size={{ xs: 12, md: 8 }}>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <RHFTextField name="display_name" label="Full Name" />
+                    <RHFTextField name="firstname" label="First Name" />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <RHFTextField name="lastname" label="Last Name" />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <RHFTextField disabled name="email" label="Email" />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <RHFTextField name="contact_number" label="Phone Number" />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <RHFSelectField
+                      name="country"
+                      label="Country"
+                      options={countryOptions.map((c) => ({
+                        label: c.label,
+                        value: c.value,
+                      }))}
+                      placeholder={"Select Country"}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <RHFSelectField
+                      name="state"
+                      label="State"
+                      options={stateOptions.map((c) => ({
+                        label: c.label,
+                        value: c.value,
+                      }))}
+                      placeholder={"Select State"}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <RHFSelectField
+                      name="city"
+                      label="City"
+                      options={cityOptions.map((c) => ({
+                        label: c.label,
+                        value: c.value,
+                      }))}
+                      placeholder={"Select City"}
+                    />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <RHFTextField name="address" label="Address" />

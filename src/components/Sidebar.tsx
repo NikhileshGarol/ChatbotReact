@@ -90,7 +90,15 @@ export default function Sidebar({ open, drawerWidth, role }: Props) {
           <ListItemButton
             key={it.path}
             selected={location.pathname === it.path}
-            sx={{ py: 1.25 }}
+            sx={{
+              py: 1.25,
+              borderBottom: "1px solid #dad5d5ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 2,
+              height: 64,
+            }}
             onClick={() => handleNavigate(it.path)}
           >
             <ListItemIcon>{it.icon}</ListItemIcon>

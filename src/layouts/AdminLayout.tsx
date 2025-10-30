@@ -43,17 +43,17 @@ export default function AdminLayout({
         sx={{ zIndex: (t) => t.zIndex.drawer + 1 }}
       >
         <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            AI Assistant
+          </Typography>
           <IconButton
             color="inherit"
             edge="start"
-            sx={{ mr: 2 }}
+            sx={{ ml: 2 }}
             onClick={() => setOpen((s) => !s)}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {roleLabel} - {user?.display_name}
-          </Typography>
           <Header />
         </Toolbar>
       </AppBar>

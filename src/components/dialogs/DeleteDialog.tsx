@@ -6,16 +6,17 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
+  Typography,
 } from "@mui/material";
 import { GridCloseIcon } from "@mui/x-data-grid";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onConfirm: (id?: any) => void;
+  onConfirm: (data?: any) => void;
   title: string;
   content?: string;
-  id?: any;
+  data?: any;
 };
 
 export default function DeleteDialog({
@@ -24,10 +25,10 @@ export default function DeleteDialog({
   onConfirm,
   title,
   content,
-  id,
+  data,
 }: Props) {
   return (
-    <Dialog open={open}>
+    <Dialog open={open} maxWidth={"sm"}>
       <DialogTitle
         sx={{
           backgroundColor: "primary.main",
@@ -35,22 +36,28 @@ export default function DeleteDialog({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingY: "6px",
+          paddingY: "2px",
         }}
       >
-        Delete {title}
+        <Typography>Delete {title}</Typography>
         <IconButton sx={{ color: "background.default" }} onClick={onClose}>
           <GridCloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ paddingTop: "10px" }}>
-          {content ? content : `Are you sure you want to delete this ${title}?`}
+        <DialogContentText sx={{ paddingY: "15px", }}>
+          <Typography fontSize={15} variant="body2">
+            {content
+              ? content
+              : `Are you sure you want to delete this ${title}?`}
+          </Typography>
         </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" color="error" onClick={() => onConfirm(id)}>
+      <DialogActions sx={{boxShadow: 2}}>
+        <Button variant="outlined" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={() => onConfirm(data)}>
           Delete
         </Button>
       </DialogActions>

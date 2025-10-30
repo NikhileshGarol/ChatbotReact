@@ -1,5 +1,5 @@
 // src/components/training/UploadDialog.tsx
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,6 +9,8 @@ import {
   Box,
   Typography,
   IconButton,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import { uploadFormSchema } from "../../validation/trainingSchema";
@@ -17,6 +19,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import { uploadDocument } from "../../services/training.service";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import LoadingOverlay from "../LoadingOverlay";
 
 type Props = {
   open: boolean;
@@ -154,7 +157,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
           display: "flex",
           justifyContent: "space-between",
           backgroundColor: "primary.main",
-          paddingY: "8px",
+          paddingY: "2px",
           alignItems: "center",
           color: "background.default",
         }}
@@ -195,7 +198,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
           </DialogContent>
 
           <DialogActions>
-            <Button onClick={handleClose} disabled={reading}>
+            <Button variant="outlined" onClick={handleClose} disabled={reading}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={reading}>
@@ -204,6 +207,8 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
           </DialogActions>
         </form>
       </FormProvider>
+      {/* Loading Overlay */}
+      <LoadingOverlay loading={reading} content="File Upload inprogress..." />
     </Dialog>
   );
 }

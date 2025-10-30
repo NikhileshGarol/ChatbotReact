@@ -1,181 +1,10 @@
-// import { useEffect, useState } from "react";
-// import {
-//   Box,
-//   IconButton,
-//   Paper,
-//   Typography,
-//   TextField,
-//   Divider,
-// } from "@mui/material";
-// import ChatIcon from "@mui/icons-material/Chat";
-// import CloseIcon from "@mui/icons-material/Close";
-// import SendIcon from "@mui/icons-material/Send";
-// import { useAuth } from "../contexts/AuthContext";
-// import { useNavigate } from "react-router-dom";
-
-// export default function FloatingChat() {
-//   const { isAuthenticated, user } = useAuth();
-//   const [open, setOpen] = useState(false);
-//   const [messages, setMessages] = useState<
-//     { from: "user" | "bot"; text: string }[]
-//   >([]);
-//   const [text, setText] = useState("");
-//   const navigate = useNavigate();
-
-//   // If user logs out, close widget and clear messages
-//   useEffect(() => {
-//     if (!isAuthenticated) {
-//       setOpen(false);
-//       setMessages([]);
-//     }
-//   }, [isAuthenticated]);
-
-//   // Optionally deep-link: if chat open, sync URL to /chat/:userId (non-navigation)
-//   useEffect(() => {
-//     if (open && user?.id) {
-//       // push a shallow state so the URL shows chat link but doesn't navigate away
-//       // This is optional; remove if you don't want URL change.
-//       window.history.replaceState({}, "", `/chat/${user.id}`);
-//     } else if (!open && isAuthenticated) {
-//       // remove chat portion from URL if present
-//       const current = window.location.pathname;
-//       if (current.startsWith("/chat/")) {
-//         // go back to prior route or dashboard
-//         window.history.replaceState(
-//           {},
-//           "",
-//           user?.role === "admin" ? "/admin" : "/dashboard"
-//         );
-//       }
-//     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [open]);
-
-//   const handleSend = () => {
-//     if (!text.trim()) return;
-//     const msg = text.trim();
-//     setMessages((m) => [...m, { from: "user", text: msg }]);
-//     setText("");
-
-//     // mock bot reply (replace with API call later)
-//     setTimeout(() => {
-//       setMessages((m) => [...m, { from: "bot", text: `Echo: ${msg}` }]);
-//     }, 600);
-//   };
-
-//   // If not authenticated, show only a disabled button that routes to login
-//   if (!isAuthenticated) {
-//     return (
-//       <Box sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 2000 }}>
-//         <IconButton
-//           color="primary"
-//           onClick={() => navigate("/auth/login")}
-//           sx={{ bgcolor: "white", boxShadow: 3 }}
-//         >
-//           <ChatIcon />
-//         </IconButton>
-//       </Box>
-//     );
-//   }
-
-//   return (
-//     <Box sx={{ position: "fixed", bottom: 74, right: 24, zIndex: 2000 }}>
-//       {!open ? (
-//         <IconButton
-//           color="primary"
-//           onClick={() => setOpen(true)}
-//           sx={{ bgcolor: "white", boxShadow: 3 }}
-//           aria-label="Open chat"
-//         >
-//           <ChatIcon />
-//         </IconButton>
-//       ) : (
-//         <Paper
-//           sx={{
-//             width: 360,
-//             height: 480,
-//             display: "flex",
-//             flexDirection: "column",
-//             boxShadow: 6,
-//             borderRadius: 3,
-//           }}
-//         >
-//           <Box
-//             sx={{
-//               display: "flex",
-//               alignItems: "center",
-//               justifyContent: "space-between",
-//               px: 2,
-//               py: 1,
-//               bgcolor: "primary.main",
-//               color: "#fff",
-//             }}
-//           >
-//             <Typography variant="subtitle1">Assistant</Typography>
-//             <Box>
-//               <IconButton
-//                 size="small"
-//                 onClick={() => setOpen(false)}
-//                 sx={{ color: "#fff" }}
-//                 aria-label="Close chat"
-//               >
-//                 <CloseIcon fontSize="small" />
-//               </IconButton>
-//             </Box>
-//           </Box>
-
-//           <Box sx={{ flex: 1, p: 2, overflowY: "auto" }}>
-//             {messages.length === 0 ? (
-//               <Typography variant="body2" color="text.secondary">
-//                 Start a new conversation
-//               </Typography>
-//             ) : (
-//               messages.map((m, idx) => (
-//                 <Box
-//                   key={idx}
-//                   sx={{
-//                     mb: 1.5,
-//                     display: "flex",
-//                     justifyContent:
-//                       m.from === "user" ? "flex-end" : "flex-start",
-//                   }}
-//                 >
-//                   <Paper sx={{ p: 1, maxWidth: "80%" }}>
-//                     <Typography variant="body2">{m.text}</Typography>
-//                   </Paper>
-//                 </Box>
-//               ))
-//             )}
-//           </Box>
-
-//           <Divider />
-
-//           <Box sx={{ display: "flex", gap: 1, p: 1 }}>
-//             <TextField
-//               size="small"
-//               placeholder="Type a message..."
-//               fullWidth
-//               value={text}
-//               onChange={(e) => setText(e.target.value)}
-//               onKeyDown={(e) => {
-//                 if (e.key === "Enter") handleSend();
-//               }}
-//             />
-//             <IconButton color="primary" onClick={handleSend} aria-label="Send">
-//               <SendIcon />
-//             </IconButton>
-//           </Box>
-//         </Paper>
-//       )}
-//     </Box>
-//   );
-// }
-
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { queryPost } from "../services/training.service";
+import { Avatar, Box, Typography } from "@mui/material";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import { useAuth } from "../contexts/AuthContext";
 
-// Extend Window interface for Speech Recognition
 declare global {
   interface Window {
     SpeechRecognition: any;
@@ -184,6 +13,7 @@ declare global {
 }
 
 const FloatingChat: React.FC = () => {
+  const { user, profileImage } = useAuth();
   const [isOpen, setIsOpen] = useState<boolean>(false); // Toggle chatbot visibility
   const [userQuery, setUserQuery] = useState<string>(""); // User's input
   const [chatHistory, setChatHistory] = useState<
@@ -191,8 +21,7 @@ const FloatingChat: React.FC = () => {
   >([
     {
       role: "bot",
-      message:
-        "Hello! I am your Revival365 AI Assistant. How can I help you today? You want know your records, CGM values,  medication schedules with dates ",
+      message: "Hello! I am your AI assistant. How can I help you today?",
     },
   ]); // Chat history
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
@@ -218,29 +47,20 @@ const FloatingChat: React.FC = () => {
     setSessionId(storedSessionId);
   }, []);
 
-  const predefinedQuestions = [
-    "Steps to Pair the CGM Device on Linx Application",
-    "Steps to Pair the CGM Device on iOS ",
-    "Steps to Pair the CGM Device on iOS",
-    "How to Pair the Wrist Band Device on IOS",
-    "Steps to Pair the CGM Device on Android",
-    "Steps to Pair the Band on Android",
-  ];
-
   // Custom components for ReactMarkdown
   const markdownComponents = {
     h1: ({ children }: any) => (
-      <h1 className="text-2xl font-bold mt-4 mb-3">{children}</h1>
+      <h1 className="text-2xl font-bold my-2">{children}</h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="text-xl font-bold mt-4 mb-3">{children}</h2>
+      <h2 className="text-xl font-bold my-2">{children}</h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-lg font-bold mt-4 mb-2 border-b border-blue-200 pb-1">
+      <h3 className="text-lg font-bold my-2 border-b border-blue-200 pb-1">
         {children}
       </h3>
     ),
-    p: ({ children }: any) => <p className="mt-6 mb-2">{children}</p>,
+    p: ({ children }: any) => <p className="my-0.5 font-sans">{children}</p>,
     ul: ({ children }: any) => (
       <ul className="list-disc pl-4 list-outside mb-2 ml-2">{children}</ul>
     ),
@@ -432,11 +252,11 @@ const FloatingChat: React.FC = () => {
       {/* Chatbot Toggle Button */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
+        className="fixed bottom-5 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
       >
         <svg
-          width="24"
-          height="24"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -450,13 +270,13 @@ const FloatingChat: React.FC = () => {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed top-16 bottom-0 right-0 z-999 flex max-h-dvh w-[35%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
+        <div className="fixed top-17 bottom-0 right-0 z-999 flex max-h-dvh w-[55%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between relative bg-blue-500 p-3 text-center font-bold text-white">
             <span>Chatbot</span>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200"
+              className="text-white hover:text-gray-200 cursor-pointer"
             >
               <svg
                 width="20"
@@ -476,7 +296,7 @@ const FloatingChat: React.FC = () => {
 
           {/* Chat History */}
           <div className="min-h-90 flex-1 overflow-y-auto bg-gray-100">
-            <div className="p-3">
+            <div className="p-1">
               {chatHistory.map((chat, index) => (
                 <div
                   key={index}
@@ -484,21 +304,38 @@ const FloatingChat: React.FC = () => {
                     chat.role === "user" ? "justify-end" : "justify-start"
                   } mb-3`}
                 >
+                  <Box sx={{ display: "flex", alignItems: "end", mx: 1 }}>
+                    {chat.role === "bot" ? (
+                      <Avatar sx={{ height: "30px", width: "30px" }}>
+                        <SmartToyIcon />
+                      </Avatar>
+                    ) : (
+                      <Avatar
+                        sx={{ height: "30px", width: "30px" }}
+                        alt={
+                          user.display_name
+                        }
+                        src={profileImage || 'http://www.gravatar.com/avatar/?d=mp'}
+                      />
+                    )}
+                  </Box>
                   <div
-                    className={`max-w-[85%] rounded-lg p-3 shadow ${
+                    className={`max-w-[85%] rounded-lg py-1 px-2 shadow ${
                       chat.role === "user"
                         ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-black"
                     }`}
                   >
-                    <strong>{chat.role === "user" ? "You" : "Bot"}:</strong>{" "}
-                    <div className="mt-2">
+                    {/* <strong>{chat.role === "user" ? "You" : "Bot"}:</strong> */}
+                    <div className="mt-0">
                       {chat.role === "bot" ? (
                         <ReactMarkdown components={markdownComponents}>
                           {chat.message}
                         </ReactMarkdown>
                       ) : (
-                        <span>{chat.message}</span>
+                        <span className="my-0.5 mx-1 font-sans">
+                          {chat.message}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -551,7 +388,7 @@ const FloatingChat: React.FC = () => {
               value={userQuery}
               onChange={(e) => setUserQuery(e.target.value)}
               onKeyDown={handleKeyDown} // Handle Enter key
-              placeholder="Type your question or use the microphone..."
+              placeholder="Type your message..."
               className="rounded pr-20 flex-1 border border-gray-300 p-2 focus:outline-none focus:ring focus:ring-blue-300"
               disabled={isLoading}
             />

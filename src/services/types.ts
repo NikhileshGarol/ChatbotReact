@@ -8,6 +8,9 @@ export type CompanyCreatePayload = {
   phone: string;
   website: string;
   address: string;
+  city: string;
+  state: string;
+  country: string;
 };
 
 export type CompanyOut = {

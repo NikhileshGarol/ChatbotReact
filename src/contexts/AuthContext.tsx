@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { login } from "../services/auth.service";
 import { getCurrentUser, getUserImage } from "../services/user.service";
 import { useSnackbar } from "./SnackbarContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type AuthContextType = {
   user: any | null;
@@ -30,6 +31,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const STORAGE_KEY = "AUTH_STORAGE_V1";
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { token, refreshToken } = JSON.parse(saved);
+      setToken(token);
+      setRefreshToken(refreshToken);
+    }
+  }, []);
 
   useEffect(() => {
     if (token && refreshToken) {

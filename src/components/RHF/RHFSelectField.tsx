@@ -8,7 +8,8 @@ type Props = {
     value: string;
     label: string;
   }[];
-  defaultValue: any;
+  defaultValue?: any;
+  placeholder?: string;
 };
 
 export default function RHFSelectField({
@@ -16,6 +17,7 @@ export default function RHFSelectField({
   label,
   options,
   defaultValue,
+  placeholder,
 }: Props) {
   const { control } = useFormContext();
 
@@ -32,12 +34,24 @@ export default function RHFSelectField({
           <FormControl error={!!fieldState.error} fullWidth>
             <Select
               {...field}
+              value={field.value || ""}
+              displayEmpty
               MenuProps={{
                 PaperProps: { sx: { maxHeight: 180, maxWidth: 150 } },
               }}
             >
+              <MenuItem disabled value={""}>
+                <Typography color="grey">{placeholder}</Typography>
+              </MenuItem>
               {options?.map((options) => (
-                <MenuItem key={options.value} value={options.value}>
+                <MenuItem
+                  sx={{
+                    px: 2,
+                    borderBottom: "1px solid lightgrey",
+                  }}
+                  key={options.value}
+                  value={options.value}
+                >
                   {options.label}
                 </MenuItem>
               ))}

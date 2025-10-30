@@ -42,7 +42,17 @@ export async function deleteUserImage() {
   return resp.data;
 }
 
-// export async function deleteUser(userId: number) {
-//   const resp = await api.delete(`/users/${userId}`);
-//   return resp.data;
-// }
+export async function getUserById(userId: number) {
+  const resp = await api.get(`/users/${userId}`);
+  return resp.data;
+}
+
+export async function updateUserById(userId: number, payload: any) {
+  const resp = await api.put(`/users/${userId}`, payload);
+  return resp.data;
+}
+
+export async function deleteUser(userId: number) {
+  const resp = await api.delete(`/users/${userId}`);
+  return resp.data;
+}

@@ -11,6 +11,7 @@ import {
   InputLabel,
   Tabs,
   Tab,
+  Divider,
 } from "@mui/material";
 import UploadDialog from "../../components/training/UploadDialog";
 import { useAuth } from "../../contexts/AuthContext";
@@ -28,7 +29,8 @@ import {
 } from "../../services/training.service";
 import type { DocumentOut } from "../../services/types";
 import CustomTable from "../../components/CustomTable";
-import type { GridColDef } from "@mui/x-data-grid";
+import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -96,11 +98,11 @@ export default function UploadDocuments() {
     }
   };
 
-  const handleWebsiteUpload = async (websiteUrl: string) => {
+  const handleWebsiteUpload = async (websiteUrl: string[]) => {
     console.log(websiteUrl);
     setIsLoading(true);
     const payload = {
-      url: websiteUrl,
+      url: websiteUrl[0],
     };
     try {
       await uploadWebsite(payload);
@@ -174,40 +176,40 @@ export default function UploadDocuments() {
   //   setLogsOpen(true);
   // };
 
-  // const handlePreview = (doc: any) => {
-  //   setPreviewDoc(doc);
-  //   setPreviewOpen(true);
-  // };
+  const handlePreview = (doc: any) => {
+    setPreviewDoc(doc);
+    setPreviewOpen(true);
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
-  // const handleDownload = (doc: any) => {
-  //   if (!doc.contentBase64) {
-  //     alert("No file content available to download.");
-  //     return;
-  //   }
-  //   try {
-  //     const byteCharacters = atob(doc.contentBase64);
-  //     const byteNumbers = new Array(byteCharacters.length);
-  //     for (let i = 0; i < byteCharacters.length; i++) {
-  //       byteNumbers[i] = byteCharacters.charCodeAt(i);
-  //     }
-  //     const byteArray = new Uint8Array(byteNumbers);
-  //     const mime = doc.mimeType ?? "application/octet-stream";
-  //     const blob = new Blob([byteArray], { type: mime });
-  //     const url = URL.createObjectURL(blob);
-  //     const a = document.createElement("a");
-  //     a.href = url;
-  //     a.download = doc.filename;
-  //     a.click();
-  //     URL.revokeObjectURL(url);
-  //   } catch (e) {
-  //     console.error(e);
-  //     alert("Failed to download file.");
-  //   }
-  // };
+  const handleDownload = (doc: any) => {
+    if (!doc.contentBase64) {
+      alert("No file content available to download.");
+      return;
+    }
+    try {
+      const byteCharacters = atob(doc.contentBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const mime = doc.mimeType ?? "application/octet-stream";
+      const blob = new Blob([byteArray], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to download file.");
+    }
+  };
 
   const isAdmin = user?.role === "admin";
   const isSuperAdmin = user?.role === "superadmin";
@@ -243,29 +245,42 @@ export default function UploadDocuments() {
       renderCell: (params) => {
         const row = params.row;
         return (
-          <>
+          <Box sx={{ display: "flex", mt: "5px" }}>
             {/* <IconButton
+              color="primary"
               size="small"
               onClick={() => handlePreview(row)}
               title="Preview"
             >
               <VisibilityIcon />
             </IconButton>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+            />
             <IconButton
+              color="primary"
               size="small"
               onClick={() => handleDownload(row)}
               title="Download"
             >
-              <DownloadIcon />
-            </IconButton> */}
+              <GridDownloadIcon />
+            </IconButton>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+            /> */}
             <IconButton
+              color="primary"
               size="small"
               onClick={() => handleDelete(row.id, "document")}
               title="Delete"
             >
               <DeleteIcon />
             </IconButton>
-          </>
+          </Box>
         );
       },
     },
@@ -288,7 +303,7 @@ export default function UploadDocuments() {
         return <span>{localFormatted}</span>;
       },
     },
-    { field: "status", headerName: "Status" },
+    // { field: "status", headerName: "Status" },
     {
       field: "actions",
       headerName: "Actions",
@@ -302,17 +317,17 @@ export default function UploadDocuments() {
               onClick={() => handlePreview(row)}
               title="Preview"
             >
-              {" "}
-              <VisibilityIcon />{" "}
+              <GridVisibilityOffIcon />
             </IconButton>
             <IconButton
               size="small"
               onClick={() => handleDownload(row)}
               title="Download"
             >
-              <DownloadIcon />
+              <GridDownloadIcon />
             </IconButton> */}
             <IconButton
+              color="primary"
               size="small"
               onClick={() => handleDelete(row.id, "website")}
               title="Delete"
@@ -345,7 +360,7 @@ export default function UploadDocuments() {
               variant="contained"
               onClick={() => setWebsiteDialogOpen(true)}
             >
-              Upload Website
+              Website
             </Button>
             {/* <Button
               variant="contained"

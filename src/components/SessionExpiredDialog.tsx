@@ -20,7 +20,11 @@ const SessionExpiredDialog: React.FC = () => {
 
   return (
     <Dialog open={sessionExpired}>
-      <DialogTitle>Session Expired</DialogTitle>
+      <DialogTitle>
+         <Typography variant="h6">
+        Session Expired!
+        </Typography>
+      </DialogTitle>
       <DialogContent>
         <Typography>Your session has expired. Please log in again.</Typography>
       </DialogContent>

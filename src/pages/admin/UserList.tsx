@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import { Typography, Box, Button } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { Typography, Box, Button, IconButton, Divider } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { type GridColDef, type GridRowsProp } from "@mui/x-data-grid";
 import { type User } from "../../store/mockData";
 import UserDialog from "../../components/dialogs/UserDialog";
 import CustomTable from "../../components/CustomTable";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import { useAuth } from "../../contexts/AuthContext";
-import { createUser, listUsers } from "../../services/user.service";
+import {
+  createUser,
+  deleteUser,
+  listUsers,
+  updateUserById,
+} from "../../services/user.service";
 import {
   createCompanyAdmin,
   getCompanyAdmins,
@@ -71,7 +77,7 @@ export default function UserList() {
     };
     try {
       const response = await createUser(payload);
-      setRows(response);
+      // setRows(response);
       showSnackbar("success", "User created successfully");
       setOpenDialog(false);
       refresh();
@@ -101,30 +107,54 @@ export default function UserList() {
     }
   };
 
+  const handleUpdateUser = async (data: any) => {
+    try {
+      await updateUserById(data.id, data);
+      showSnackbar("success", "User details update successfully");
+      setOpenDialog(false);
+      refresh();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+    }
+  };
+
+  const handleDeleteUserById = async (data: any) => {
+    try {
+      await deleteUser(data.id);
+      showSnackbar("success", "User deleted successfully");
+      setDeleteConfirmOpen(false);
+      setToDelete(null);
+      refresh();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+    }
+  };
+
   const handleAdd = () => {
     setEditing(null);
     setOpenDialog(true);
   };
 
-  // const handleEdit = (row: User) => {
-  //   setEditing(row);
-  //   setOpenDialog(true);
-  // };
+  const handleEdit = (row: User) => {
+    setEditing(row);
+    setOpenDialog(true);
+  };
 
-  // const handleDelete = (row: User) => {
-  //   setToDelete(row);
-  //   setDeleteConfirmOpen(true);
-  // };
+  const handleDelete = (row: User) => {
+    setToDelete(row);
+    setDeleteConfirmOpen(true);
+  };
 
-  const confirmDelete = () => {
+  const confirmDelete = (data: any) => {
     if (!toDelete) return;
-    setDeleteConfirmOpen(false);
-    setToDelete(null);
-    refresh();
+    handleDeleteUserById(data);
   };
 
   const handleSave = (data: any) => {
     if (editing) {
+      handleUpdateUser(data);
     } else {
       !isSuperAdmin ? handleCreateUser(data) : handleCreateAdminUser(data);
     }
@@ -133,7 +163,14 @@ export default function UserList() {
 
   const columns: GridColDef[] = useMemo(
     () => [
-      { field: "display_name", headerName: "Name", width: 120 },
+      { field: "name", headerName: "Name", width: 120, 
+        renderCell: (params) => {
+          const fullname = params.row.firstname + " " + params.row.lastname;
+          return (
+            <span>{fullname}</span>
+          )
+        }
+       },
       { field: "email", headerName: "Email", width: 220 },
       { field: "contact_number", headerName: "Phone", width: 140 },
       {
@@ -158,7 +195,7 @@ export default function UserList() {
       //   headerName: "Status",
       //   width: 110,
       //   renderCell: (params: any) => {
-      //     const isActive = params.row.status === "active" ? true : false;
+      //     const isActive = params.row.is_active;
       //     return (
       //       <span style={{ color: isActive ? "green" : "red" }}>
       //         {isActive ? "Active" : "InActive"}
@@ -185,6 +222,40 @@ export default function UserList() {
       //     );
       //   },
       // },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 140,
+        sortable: false,
+        renderCell: (params) => {
+          const row = params.row;
+          return (
+            <Box sx={{ display: "flex", mt: "5px" }}>
+              <IconButton
+                title="Edit User details"
+                color="primary"
+                size="small"
+                onClick={() => handleEdit(row)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+              />
+              <IconButton
+                title="Delete User"
+                color="primary"
+                size="small"
+                onClick={() => handleDelete(row)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          );
+        },
+      },
     ],
     []
   );
@@ -205,14 +276,15 @@ export default function UserList() {
           }}
         >
           <Typography variant="h6">Users</Typography>
-          <Button
-            variant="contained"
-            onClick={handleAdd}
-          >
+          <Button variant="contained" onClick={handleAdd}>
             Add user
           </Button>
         </Box>
-        <CustomTable isLoading={loading} gridRows={gridRows} columns={columns} />
+        <CustomTable
+          isLoading={loading}
+          gridRows={gridRows}
+          columns={columns}
+        />
       </Box>
 
       <UserDialog
@@ -225,7 +297,8 @@ export default function UserList() {
       <DeleteDialog
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={confirmDelete}
+        onConfirm={(data) => confirmDelete(data)}
+        data={toDelete}
         title="User"
       />
     </AdminLayout>
