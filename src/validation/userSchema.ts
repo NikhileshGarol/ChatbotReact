@@ -11,7 +11,7 @@ export const userSchema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
   contact_number: yup.string().required('Phone number is required').matches(/^\+?[0-9\- ]{10}$/, 'Invalid phone number'),
   role: yup.mixed<'admin' | 'user'>().oneOf(['admin', 'user']).required('Role required'),
-  companyId: yup.string().nullable().test(
+  company_name: yup.string().nullable().test(
     'required-if-superadmin',
     'Select Company',
     function (value) {

@@ -270,7 +270,7 @@ const FloatingChat: React.FC = () => {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed top-17 bottom-0 right-0 z-999 flex max-h-dvh w-[55%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
+        <div className="fixed top-17 bottom-0 right-0 z-999 flex max-h-dvh w-[35%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between relative bg-blue-500 p-3 text-center font-bold text-white">
             <span>Chatbot</span>

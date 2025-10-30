@@ -8,6 +8,7 @@ import {
   IconButton,
   Grid,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,23 +16,34 @@ import RHFTextField from "../RHF/RHFTextField";
 import { userSchema } from "../../validation/userSchema";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import RHFSelectField from "../RHF/RHFSelectField";
-import RHFSwitchField from "../RHF/RHFSwitchField";
 import { useAuth } from "../../contexts/AuthContext";
-import { listCompanies } from "../../services/company.service";
+import {
+  getCompanyAdminById,
+  listCompanies,
+} from "../../services/company.service";
 import { City, Country, State } from "country-state-city";
 import { getUserById } from "../../services/user.service";
+import LoadingOverlay from "../LoadingOverlay";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSave: (data: any) => void;
   initial?: any | null;
+  loading?: boolean;
 };
 
-export default function UserDialog({ open, onClose, onSave, initial }: Props) {
+export default function UserDialog({
+  open,
+  onClose,
+  onSave,
+  initial,
+  loading,
+}: Props) {
   const { user } = useAuth();
   const [companyList, setCompanyList] = useState<any[]>([]);
   const isSuperAdmin = user?.role === "superadmin";
+  const [isLoading, setIsLoading] = useState(false);
   // State to store options
   const [countryOptions, setCountryOptions] = useState(
     Country.getAllCountries().map((c) => ({
@@ -53,9 +65,9 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
       email: "",
       contact_number: "",
       role: isSuperAdmin ? "admin" : "user",
-      companyId: companyList.length ? companyList[0].id : null,
+      company_name: companyList.length ? companyList[0].id : null,
       // status: "active",
-      tenant_code: user.user_code.split("-")[0],
+      tenant_code: "",
       user_code: "",
       address: "",
       password: "",
@@ -70,6 +82,13 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
 
   const selectedCountry = watch("country");
   const selectedState = watch("state");
+  const selectedCompany = watch("company_name")
+
+  useEffect(() => {
+    if(selectedCompany) {
+      methods.setValue("tenant_code", selectedCompany)
+    }
+  },[selectedCompany])
 
   useEffect(() => {
     if (selectedCountry) {
@@ -79,9 +98,9 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
       }));
       setStateOptions(states);
       if (!initial) {
-      methods.setValue("state", ""); // reset state
-      setCityOptions([]);
-      methods.setValue("city", ""); // reset city
+        methods.setValue("state", ""); // reset state
+        setCityOptions([]);
+        methods.setValue("city", ""); // reset city
       }
     }
   }, [selectedCountry, methods]);
@@ -96,23 +115,24 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
       );
       setCityOptions(cities);
       if (!initial) {
-      methods.setValue("city", ""); // reset city if state changes
+        methods.setValue("city", ""); // reset city if state changes
       }
     }
   }, [selectedState, selectedCountry, methods]);
 
   useEffect(() => {
-    if (initial) {
+    if (initial && !isSuperAdmin) {
       fetchUserById();
-    } else if (open && isSuperAdmin) {
+    } else if (open && initial && isSuperAdmin) {
       getAllCompanies();
+      fetchAdminById();
     } else {
       methods.reset({
         display_name: "",
         email: "",
         contact_number: "",
         role: isSuperAdmin ? "admin" : "user",
-        companyId: companyList.length ? companyList[0].id : null,
+        company_name: companyList.length ? companyList[0].id : null,
         // status: "active",
         tenant_code: !isSuperAdmin ? user.user_code.split("-")[0] : "",
         user_code: "",
@@ -127,14 +147,29 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
 
   const fetchUserById = async () => {
     try {
-      const userData = await getUserById(initial.id); // Call your API with the ID from initial
+      setIsLoading(true);
+      const userData = await getUserById(initial.id);
       methods.reset(userData);
     } catch (error) {
       console.error("Failed to fetch user data", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const watchedCompanyId = watch("companyId");
+  const fetchAdminById = async () => {
+    try {
+      setIsLoading(true);
+      const userData = await getCompanyAdminById(initial.id);
+      methods.reset(userData);
+    } catch (error) {
+      console.error("Failed to fetch user data", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const watchedCompanyId = watch("company_name");
 
   useEffect(() => {
     if (watchedCompanyId) {
@@ -240,11 +275,11 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
               {isSuperAdmin && (
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <RHFSelectField
-                    name="companyId"
+                    name="company_name"
                     label="Company"
                     options={companyList.map((c) => ({
                       label: c.name,
-                      value: c.id,
+                      value: c.name,
                     }))}
                     defaultValue={"Select Company"}
                   />
@@ -317,11 +352,18 @@ export default function UserDialog({ open, onClose, onSave, initial }: Props) {
               Cancel
             </Button>
             <Button type="submit" variant="contained">
-              {initial ? "Save" : "Create"}
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : initial ? (
+                "Save"
+              ) : (
+                "Create"
+              )}
             </Button>
           </DialogActions>
         </form>
       </FormProvider>
+      {isLoading && <LoadingOverlay loading={isLoading} />}
     </Dialog>
   );
 }

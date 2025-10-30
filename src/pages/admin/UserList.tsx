@@ -17,9 +17,12 @@ import {
 } from "../../services/user.service";
 import {
   createCompanyAdmin,
+  deleteCompanyAdmin,
   getCompanyAdmins,
+  updateAdmin,
 } from "../../services/company.service";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { useEffectOnce } from "../../hooks/useEffectOnce";
 
 export default function UserList() {
   const { user } = useAuth();
@@ -33,7 +36,7 @@ export default function UserList() {
   const isSuperAdmin = user?.role === "superadmin";
   const calledRef = useRef(false);
 
-  useEffect(() => {
+  useEffectOnce(() => {
     if (calledRef.current) return;
     calledRef.current = true;
 
@@ -42,13 +45,12 @@ export default function UserList() {
     } else {
       refresh();
     }
-  }, []);
+  });
 
   const refresh = async () => {
     try {
       setLoading(true);
       const resp = await listUsers();
-      console.log(resp);
       setRows(resp);
     } catch (error) {
       console.error(error);
@@ -76,6 +78,7 @@ export default function UserList() {
       user_code: tenantCode + "-" + data.user_code,
     };
     try {
+      setLoading(true);
       const response = await createUser(payload);
       // setRows(response);
       showSnackbar("success", "User created successfully");
@@ -85,6 +88,8 @@ export default function UserList() {
       const message = error?.response?.data?.detail || "something went wrong";
       showSnackbar("error", message);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,6 +100,7 @@ export default function UserList() {
       user_code: tenantCode + "-" + data.user_code,
     };
     try {
+      setLoading(true);
       const response = await createCompanyAdmin(tenantCode, payload);
       setRows(response);
       showSnackbar("success", "User created successfully");
@@ -104,11 +110,14 @@ export default function UserList() {
       const message = error?.response?.data?.detail || "something went wrong";
       showSnackbar("error", message);
       console.log(error);
+    } finally {
+      setLoading(true);
     }
   };
 
   const handleUpdateUser = async (data: any) => {
     try {
+      setLoading(true);
       await updateUserById(data.id, data);
       showSnackbar("success", "User details update successfully");
       setOpenDialog(false);
@@ -116,11 +125,29 @@ export default function UserList() {
     } catch (error: any) {
       const message = error?.response?.data?.detail || "something went wrong";
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateAdmin = async (data: any) => {
+    try {
+      setLoading(true);
+      await updateAdmin(data.id, data);
+      showSnackbar("success", "Admin details update successfully");
+      setOpenDialog(false);
+      listAllAdminUsers();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteUserById = async (data: any) => {
     try {
+      setLoading(true);
       await deleteUser(data.id);
       showSnackbar("success", "User deleted successfully");
       setDeleteConfirmOpen(false);
@@ -129,6 +156,24 @@ export default function UserList() {
     } catch (error: any) {
       const message = error?.response?.data?.detail || "something went wrong";
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAdminById = async (data: any) => {
+    try {
+      setLoading(true);
+      await deleteCompanyAdmin(data.id);
+      showSnackbar("success", "Admin deleted successfully");
+      setDeleteConfirmOpen(false);
+      setToDelete(null);
+      listAllAdminUsers();
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "something went wrong";
+      showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,28 +194,36 @@ export default function UserList() {
 
   const confirmDelete = (data: any) => {
     if (!toDelete) return;
-    handleDeleteUserById(data);
+    if (isSuperAdmin) {
+      handleDeleteAdminById(data);
+    } else {
+      handleDeleteUserById(data);
+    }
   };
 
   const handleSave = (data: any) => {
     if (editing) {
-      handleUpdateUser(data);
+      if (isSuperAdmin) {
+        handleUpdateAdmin(data);
+      } else {
+        handleUpdateUser(data);
+      }
     } else {
       !isSuperAdmin ? handleCreateUser(data) : handleCreateAdminUser(data);
     }
-    refresh();
   };
 
   const columns: GridColDef[] = useMemo(
     () => [
-      { field: "name", headerName: "Name", width: 120, 
+      {
+        field: "name",
+        headerName: "Name",
+        width: 120,
         renderCell: (params) => {
           const fullname = params.row.firstname + " " + params.row.lastname;
-          return (
-            <span>{fullname}</span>
-          )
-        }
-       },
+          return <span>{fullname}</span>;
+        },
+      },
       { field: "email", headerName: "Email", width: 220 },
       { field: "contact_number", headerName: "Phone", width: 140 },
       {
@@ -275,9 +328,11 @@ export default function UserList() {
             mb: 2,
           }}
         >
-          <Typography variant="h6">Users</Typography>
+          <Typography variant="h6">
+            {isSuperAdmin ? "Admins" : "Users"}
+          </Typography>
           <Button variant="contained" onClick={handleAdd}>
-            Add user
+            Add {isSuperAdmin ? "admin" : "user"}
           </Button>
         </Box>
         <CustomTable
@@ -292,6 +347,7 @@ export default function UserList() {
         onClose={() => setOpenDialog(false)}
         onSave={handleSave}
         initial={editing}
+        loading={loading}
       />
 
       <DeleteDialog
@@ -299,7 +355,7 @@ export default function UserList() {
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={(data) => confirmDelete(data)}
         data={toDelete}
-        title="User"
+        title={isSuperAdmin ? "Admin" : "User"}
       />
     </AdminLayout>
   );

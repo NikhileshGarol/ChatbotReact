@@ -8,6 +8,7 @@ import {
   IconButton,
   Grid,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,12 +18,14 @@ import { type Company } from "../../store/mockData";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import { City, Country, State } from "country-state-city";
 import RHFSelectField from "../RHF/RHFSelectField";
+import LoadingOverlay from "../LoadingOverlay";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSave: (data: Partial<Company>) => void;
   initial?: any | null;
+  loading?: boolean;
 };
 
 export default function CompanyDialog({
@@ -30,6 +33,7 @@ export default function CompanyDialog({
   onClose,
   onSave,
   initial,
+  loading,
 }: Props) {
   const methods = useForm({
     resolver: yupResolver(companySchema),
@@ -47,11 +51,18 @@ export default function CompanyDialog({
       // status: "active" as "active" | "inactive",
     },
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (initial) {
-      console.log(initial)
-      methods.reset({ ...initial });
+      setIsLoading(true);
+      // Simulate async with a timeout or real async call
+      async function resetForm() {
+        await new Promise((resolve) => setTimeout(resolve, 500)); // example delay
+        methods.reset({ ...initial });
+        setIsLoading(false);
+      }
+      resetForm();
     } else {
       methods.reset({
         name: "",
@@ -129,9 +140,8 @@ export default function CompanyDialog({
           alignItems: "center",
           color: "background.default",
         }}
-      ><Typography>
-        {initial ? "Edit Company" : "Add Company"}
-        </Typography>
+      >
+        <Typography>{initial ? "Edit Company" : "Add Company"}</Typography>
         <IconButton sx={{ color: "background.default" }}>
           <GridCloseIcon onClick={onClose} />
         </IconButton>
@@ -232,14 +242,21 @@ export default function CompanyDialog({
             </Grid>
           </DialogContent>
 
-          <DialogActions sx={{boxShadow: 2}}>
+          <DialogActions sx={{ boxShadow: 2 }}>
             <Button onClick={onClose}>Cancel</Button>
             <Button type="submit" variant="contained">
-              {initial ? "Save changes" : "Create"}
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : initial ? (
+                "Save"
+              ) : (
+                "Create"
+              )}
             </Button>
           </DialogActions>
         </form>
       </FormProvider>
+      {isLoading && <LoadingOverlay loading={isLoading} />}
     </Dialog>
   );
 }

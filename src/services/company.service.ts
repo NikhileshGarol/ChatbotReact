@@ -33,6 +33,11 @@ export async function deleteCompanyDetails(tenantCode: string) {
   return resp.data;
 }
 
+export async function getCompanyDetailsById(tenantCode: string) {
+  const resp = await api.get<any>(`/superadmin/companies/${tenantCode}`);
+  return resp.data;
+}
+
 export async function createCompanyAdmin(
   tenantCode: string,
   payload: CompanyAdminCreatePayload
@@ -46,6 +51,24 @@ export async function createCompanyAdmin(
 
 export async function getCompanyAdmins() {
   const resp = await api.get("/superadmin/companies/admins");
+  return resp.data;
+}
+
+export async function getCompanyAdminById(admin_id: number) {
+  const resp = await api.get(`/superadmin/companies/admins/${admin_id}`);
+  return resp.data;
+}
+
+export async function updateAdmin(admin_id: string, payload: any) {
+  const resp = await api.put(
+    `/superadmin/companies/admins/${admin_id}`,
+    payload
+  );
+  return resp.data;
+}
+
+export async function deleteCompanyAdmin(admin_id: number) {
+  const resp = await api.delete(`/superadmin/companies/admins/${admin_id}`);
   return resp.data;
 }
 
