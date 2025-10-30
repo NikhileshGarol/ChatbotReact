@@ -63,7 +63,7 @@ export default function UploadDocuments() {
   useEffect(() => {
     if (tabIndex === 1) {
       fetchWebsites();
-    } else if (tabIndex === 0) {
+    } else {
       refresh();
     }
   }, [tabIndex, scopeUserId]);
@@ -119,6 +119,7 @@ export default function UploadDocuments() {
 
   const onUploaded = () => {
     setTabIndex(0);
+    refresh();
   };
 
   const handleDelete = (id: number, type: "document" | "website") => {

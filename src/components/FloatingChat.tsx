@@ -556,7 +556,7 @@ const FloatingChat: React.FC = () => {
               disabled={isLoading}
             />
             {/* Microphone Button */}
-            <button
+            {/* <button
               onClick={isListening ? stopListening : startListening}
               className={`rounded -ml-16 pr-2 py-2 ${
                 isListening
@@ -617,7 +617,7 @@ const FloatingChat: React.FC = () => {
                   <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                 </svg>
               )}
-            </button>
+            </button> */}
             <button
               onClick={() => handleSendMessage()}
               className="rounded rounded-l-none bg-blue-500 px-3 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center"

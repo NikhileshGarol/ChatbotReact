@@ -21,6 +21,7 @@ import {
   updateCurrentUser,
 } from "../../services/user.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 const schema = yup.object({
   display_name: yup.string().required("Name is required"),
@@ -36,6 +37,7 @@ type FormData = yup.InferType<typeof schema>;
 
 const Profile: React.FC = () => {
   const { user, setUser, refreshProfileImage } = useAuth();
+  const { showSnackbar } = useSnackbar();
   const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   // Initialize form with default values from user (example hardcoded)
@@ -91,12 +93,10 @@ const Profile: React.FC = () => {
       const response = await updateCurrentUser(data);
       console.log(response);
       setUser(response);
-      // Call your API to update profile
-      console.log("Profile updated:", data);
-      //   alert("Profile updated successfully!");
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      //   alert("Failed to update profile.");
+      showSnackbar("success", "Profile details updated successfully");
+    } catch (error: any) {
+      const message = error?.response?.data?.detail || "Something went wrong";
+      showSnackbar("error", message);
     }
   };
 

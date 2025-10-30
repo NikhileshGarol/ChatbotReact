@@ -11,13 +11,12 @@ import {
   IconButton,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
-import RHFTextField from "../../components/RHF/RHFTextField";
 import { uploadFormSchema } from "../../validation/trainingSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { addDocumentForUser } from "../../store/trainingMock";
 import { useAuth } from "../../contexts/AuthContext";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import { uploadDocument } from "../../services/training.service";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 type Props = {
   open: boolean;
@@ -29,7 +28,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
   const methods = useForm({ resolver: yupResolver(uploadFormSchema) });
   const { handleSubmit } = methods;
   const { user } = useAuth();
-
+  const { showSnackbar } = useSnackbar();
   const [file, setFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [reading, setReading] = React.useState(false);
@@ -41,15 +40,50 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       setFile(null);
       return;
     }
-    const allowedExt = [".pdf"];
+    const allowedExt = [
+      // ".jpg",
+      // ".jpeg",
+      // ".png",
+      // ".gif",
+      // ".bmp",
+      // ".svg",
+      // ".webp", // images
+      // ".pdf", // pdf
+      // ".doc",
+      // ".docx", // word documents
+      // ".xls",
+      // ".xlsx", // excel spreadsheets
+      // ".ppt",
+      // ".pptx", // presentations (optional)
+      // ".txt",
+      // ".rtf", // text files
+      // ".csv", // comma-separated values
+      ".pdf",
+      ".docx",
+      ".doc",
+      ".xlsx",
+      ".xls",
+      ".pptx",
+      ".ppt",
+      ".txt",
+      ".csv",
+      ".md",
+      ".rst",
+      ".log",
+    ];
+
+    function isAllowedFile(fileName: string): boolean {
+      const lowerFileName = fileName.toLowerCase();
+      return allowedExt.some((ext) => lowerFileName.endsWith(ext));
+    }
     const name = f.name.toLowerCase();
     const isAllowed = allowedExt.some((ext) => name.endsWith(ext));
     if (!isAllowed) {
-      setError("Unsupported file type. Allowed: PDF");
+      setError("Unsupported file type.");
       return;
     }
-    if (f.size > 20 * 1024 * 1024) {
-      setError("File too large. Max 20MB allowed.");
+    if (f.size > 5 * 1024 * 1024) {
+      setError("File too large. Max 5MB allowed.");
       return;
     }
     setFile(f);
@@ -96,30 +130,25 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
     }
     try {
       setReading(true);
-      const resp = await uploadDocument(file);
-      console.log(resp);
-      // const { base64, mimeType } = await readFileAsBase64(file);
-      // // Store metadata + contentBase64 in mock store
-      // addDocumentForUser(user.id, {
-      //   filename: file.name,
-      //   title: data.title ?? file.name,
-      //   description: data.description ?? "",
-      //   size: file.size,
-      //   contentBase64: base64,
-      //   mimeType,
-      // });
+      await uploadDocument(file);
       if (onUploaded) onUploaded();
       onClose();
-    } catch (e) {
-      console.error(e);
-      setError("Failed to read file.");
+      showSnackbar("success", "Document uploaded successfully");
+    } catch (e: any) {
+      const message = e?.response?.data?.detail || "Something went wrong";
+      showSnackbar("error", message);
     } finally {
       setReading(false);
     }
   };
 
+  const handleClose = () => {
+    setFile(null);
+    onClose();
+  };
+
   return (
-    <Dialog open={open} fullWidth maxWidth="sm">
+    <Dialog open={open} maxWidth="sm">
       <DialogTitle
         sx={{
           display: "flex",
@@ -132,7 +161,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       >
         Upload Document
         <IconButton sx={{ color: "background.default" }}>
-          <GridCloseIcon onClick={onClose} />
+          <GridCloseIcon onClick={handleClose} />
         </IconButton>
       </DialogTitle>
       <FormProvider {...methods}>
@@ -161,12 +190,12 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
               </Box>
             </Box>
 
-            <RHFTextField name="title" label="Title (optional)" />
-            <RHFTextField name="description" label="Description (optional)" />
+            {/* <RHFTextField name="title" label="Title (optional)" />
+            <RHFTextField name="description" label="Description (optional)" /> */}
           </DialogContent>
 
           <DialogActions>
-            <Button onClick={onClose} disabled={reading}>
+            <Button onClick={handleClose} disabled={reading}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={reading}>

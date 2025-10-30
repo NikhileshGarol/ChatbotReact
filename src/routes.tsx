@@ -79,7 +79,7 @@ const routes = [
       </ProtectedRoute>
     ),
   },
-    {
+  {
     path: "/profile",
     element: (
       <ProtectedRoute>
@@ -110,6 +110,10 @@ const routes = [
   {
     path: "*",
     element: <Navigate to="/unauthorized" replace />,
+  },
+  {
+    path: "/",
+    element: <Navigate to="/auth/login" replace />,
   },
 ];
 
