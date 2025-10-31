@@ -60,7 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const objectUrl = URL.createObjectURL(response);
       setProfileImage(objectUrl);
     } catch (error) {
-      console.error(error);
       setProfileImage(null);
     }
   };
@@ -70,10 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const resp = await login(username, password);
       setToken(resp.access_token);
       setRefreshToken(resp.refresh_token);
+      return resp;
     } catch (error: any) {
       const message = error?.response?.data?.detail || "Something went wrong";
       showSnackbar("error", message);
-      console.error(error);
     }
   };
 

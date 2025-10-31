@@ -15,14 +15,17 @@ const theme = createTheme({
           fontSize: "12px",
           marginLeft: 0,
           textTransform: "none",
+          "&.Mui-error": {
+            color: "#D32F2F",
+          },
         },
         contained: {
           marginLeft: 0, // keep aligned with input
         },
-        error: {
-          color: "#D32F2F", // your custom default error color
-          fontWeight: 600,
-        },
+        // error: {
+        //   color: "#D32F2F", // your custom default error color
+        //   fontWeight: 600,
+        // },
       },
     },
     MuiInputBase: {

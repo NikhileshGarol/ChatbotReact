@@ -135,8 +135,8 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       setReading(true);
       await uploadDocument(file);
       if (onUploaded) onUploaded();
-      onClose();
       showSnackbar("success", "Document uploaded successfully");
+      handleClose();
     } catch (e: any) {
       const message = e?.response?.data?.detail || "Something went wrong";
       showSnackbar("error", message);
@@ -147,6 +147,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
 
   const handleClose = () => {
     setFile(null);
+    setError(null);
     onClose();
   };
 

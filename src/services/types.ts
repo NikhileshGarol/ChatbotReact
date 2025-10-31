@@ -106,4 +106,9 @@ export type ResetPassword = {
   new_password: string;
 };
 
+export type FilterOption = {
+  label: string;
+  value: string;
+};
+
 export type Roles = "superadmin" | "admin" | "user";

@@ -18,36 +18,45 @@ import { useAuth } from "../../contexts/AuthContext";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LogsDialog from "../../components/training/LogsDialog";
 import PreviewDialog from "../../components/training/PreviewDialog";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import type { TrainingJob, TrainingDocument } from "../../store/trainingMock";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import {
   deleteDocument,
   deleteWebsite,
   listDocuments,
+  listDocumentsSuperadmin,
   listWebsite,
+  listWebsitesSuperadmin,
+  previvewDocSuperadmin,
+  previvewDocUser,
   uploadWebsite,
 } from "../../services/training.service";
-import type { DocumentOut } from "../../services/types";
+import type { DocumentOut, FilterOption } from "../../services/types";
 import CustomTable from "../../components/CustomTable";
 import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { listCompanies } from "../../services/company.service";
+import { useEffectOnce } from "../../hooks/useEffectOnce";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function UploadDocuments() {
   const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const isSuperAdmin = user?.role === "superadmin";
   const { showSnackbar } = useSnackbar();
   const [openUpload, setOpenUpload] = useState(false);
   const [docs, setDocs] = useState<DocumentOut[]>([]);
   const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
   const [logsOpen, setLogsOpen] = useState(false);
-  const [previewDoc, setPreviewDoc] = useState<TrainingDocument | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
@@ -60,17 +69,47 @@ export default function UploadDocuments() {
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [scopeUserId, setScopeUserId] = useState<string | "all" | "me">("all");
+  const [scopeUserId, setScopeUserId] = useState<string | null>("all");
+  const [filterOptions, setFilterOptions] = useState<FilterOption[]>([]);
+
+  const UserFilerOptions = [
+    { label: "Me", value: "me" },
+    { label: "All Users", value: "all" },
+  ];
+
+  useEffectOnce(() => {
+    async function fetchAndSetOptions() {
+      if (isSuperAdmin) {
+        const companies = await listCompanies();
+        const optionsFromCompanies = companies?.map((c: any) => ({
+          label: c.name,
+          value: c.tenant_code,
+        }));
+        setFilterOptions(optionsFromCompanies);
+      } else {
+        setFilterOptions(UserFilerOptions);
+      }
+    }
+    fetchAndSetOptions();
+  });
 
   useEffect(() => {
     if (tabIndex === 1) {
-      fetchWebsites();
+      if (isSuperAdmin) {
+        listSuperadminWeb();
+      } else {
+        fetchWebsites();
+      }
     } else {
-      refresh();
+      if (isSuperAdmin) {
+        listAllSuperadminDocs();
+      } else {
+        listAllUserDocs();
+      }
     }
   }, [tabIndex, scopeUserId]);
 
-  const refresh = async () => {
+  const listAllUserDocs = async () => {
     if (!user) return;
     try {
       setLoading(true);
@@ -84,11 +123,43 @@ export default function UploadDocuments() {
     }
   };
 
+  const listAllSuperadminDocs = async () => {
+    const filter = scopeUserId === "all" ? "" : scopeUserId;
+    const payload = {
+      tenant_code: filter || undefined,
+    };
+    try {
+      setLoading(true);
+      const response = await listDocumentsSuperadmin(payload);
+      setDocs(response);
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchWebsites = async () => {
     const myDocsOnly = scopeUserId === "all" ? "false" : "true";
     try {
       setLoading(true);
       const response = await listWebsite({ my_docs_only: myDocsOnly });
+      setWebsites(response);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const listSuperadminWeb = async () => {
+    const filter = scopeUserId === "all" ? "" : scopeUserId;
+    const payload = {
+      tenant_code: filter || undefined,
+    };
+    try {
+      setLoading(true);
+      const response = await listWebsitesSuperadmin(payload);
       setWebsites(response);
       setLoading(false);
     } catch (error) {
@@ -109,7 +180,7 @@ export default function UploadDocuments() {
       showSnackbar("success", "Website uploaded successfully");
       setIsLoading(false);
       setWebsiteDialogOpen(false);
-      setTabIndex(1);
+      fetchWebsites();
     } catch (e: any) {
       const message = e?.response.data.detail || "something went wrong";
       showSnackbar("error", message);
@@ -121,7 +192,7 @@ export default function UploadDocuments() {
 
   const onUploaded = () => {
     setTabIndex(0);
-    refresh();
+    listAllUserDocs();
   };
 
   const handleDelete = (id: number, type: "document" | "website") => {
@@ -157,7 +228,7 @@ export default function UploadDocuments() {
       setOpenDeleteDialog(false);
       setSelectedRow(null);
       setDeleteType("");
-      refresh();
+      listAllUserDocs();
       console.log(resp);
     } catch (error) {
       console.error(error);
@@ -167,7 +238,7 @@ export default function UploadDocuments() {
   // const handleStartTraining = (docId: string) => {
   //   if (!user) return;
   //   startTrainingForUser(user.id, [docId]);
-  //   refresh();
+  //   listAllUserDocs();
   // };
 
   // const handleViewLogs = (jobId: string) => {
@@ -185,45 +256,47 @@ export default function UploadDocuments() {
     setTabIndex(newValue);
   };
 
-  const handleDownload = (doc: any) => {
-    if (!doc.contentBase64) {
-      alert("No file content available to download.");
-      return;
-    }
+  const handleDownload = async (row: any) => {
     try {
-      const byteCharacters = atob(doc.contentBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      let response;
+      if (isSuperAdmin) {
+        response = await previvewDocSuperadmin(row.id);
+      } else {
+        response = await previvewDocUser(row.id);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const mime = doc.mimeType ?? "application/octet-stream";
-      const blob = new Blob([byteArray], { type: mime });
+      // Create blob from response
+      const blob =
+        response instanceof Blob ? response : await response.blob?.();
       const url = URL.createObjectURL(blob);
+      // Create an anchor and trigger download
       const a = document.createElement("a");
       a.href = url;
-      a.download = doc.filename;
+      a.download = row.filename; // or fallback name from backend
+      document.body.appendChild(a);
       a.click();
+      a.remove();
+      // Cleanup
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to download file.");
+    } catch (error) {
+      console.error("File download failed:", error);
     }
   };
 
-  const isAdmin = user?.role === "admin";
-  const isSuperAdmin = user?.role === "superadmin";
+  const handleOpenWebLink = (row: any) => {
+    if (!row || !row.url) return;
+    window.open(row.url, "_blank", "noopener,noreferrer");
+  };
 
   const columns: GridColDef[] = [
     {
-      field: "filename",
-      headerName: "Title",
+      field: "company_name",
+      headerName: "Company Name",
       valueGetter: (params) => {
         return params || "-";
       },
     },
     { field: "original_name", headerName: "File Name" },
-    { field: "user_code", headerName: "Usercode" },
+    { field: "user_name", headerName: "Uploaded By" },
     {
       field: "created_at",
       headerName: "Uploaded At",
@@ -237,16 +310,16 @@ export default function UploadDocuments() {
         return <span>{localFormatted}</span>;
       },
     },
-    // { field: "status", headerName: "Status" },
     {
       field: "actions",
       headerName: "Actions",
       sortable: false,
+      width: 140,
       renderCell: (params) => {
         const row = params.row;
         return (
           <Box sx={{ display: "flex", mt: "5px" }}>
-            {/* <IconButton
+            <IconButton
               color="primary"
               size="small"
               onClick={() => handlePreview(row)}
@@ -271,7 +344,7 @@ export default function UploadDocuments() {
               orientation="vertical"
               flexItem
               sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
-            /> */}
+            />
             <IconButton
               color="primary"
               size="small"
@@ -287,12 +360,13 @@ export default function UploadDocuments() {
   ];
 
   const websiteColumns: GridColDef[] = [
-    { field: "title", headerName: "Title" },
-    { field: "url", headerName: "Webite URL" },
-    { field: "uploader_id", headerName: "Uploaded By" },
+    { field: "company_name", headerName: "Company Name" },
+    { field: "title", headerName: "Website Title" },
+    { field: "url", headerName: "Website URL" },
+    { field: "user_name", headerName: "Scraped By" },
     {
       field: "created_at",
-      headerName: "Uploaded At",
+      headerName: "Scraped At",
       renderCell: (params) => {
         const date = params?.row?.created_at;
         const localFormatted = dayjs
@@ -303,29 +377,28 @@ export default function UploadDocuments() {
         return <span>{localFormatted}</span>;
       },
     },
-    // { field: "status", headerName: "Status" },
     {
       field: "actions",
       headerName: "Actions",
       sortable: false,
+      width: 100,
       renderCell: (params) => {
         const row = params.row;
         return (
-          <>
-            {/* <IconButton
-              size="small"
-              onClick={() => handlePreview(row)}
-              title="Preview"
-            >
-              <GridVisibilityOffIcon />
-            </IconButton>
+          <Box sx={{ display: "flex", mt: "5px" }}>
             <IconButton
               size="small"
-              onClick={() => handleDownload(row)}
-              title="Download"
+              color="primary"
+              onClick={() => handleOpenWebLink(row)}
+              title="Visit website"
             >
-              <GridDownloadIcon />
-            </IconButton> */}
+              <OpenInNewIcon />
+            </IconButton>
+                        <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+            />
             <IconButton
               color="primary"
               size="small"
@@ -334,7 +407,7 @@ export default function UploadDocuments() {
             >
               <DeleteIcon />
             </IconButton>
-          </>
+          </Box>
         );
       },
     },
@@ -362,147 +435,39 @@ export default function UploadDocuments() {
             >
               Website
             </Button>
-            {/* <Button
-              variant="contained"
-              onClick={() => {
-                if (!user) return;
-                const uId =
-                  scopeUserId === "all" ? undefined : scopeUserId ?? user.id;
-                const docsToTrain = (getDocumentsForUser(uId) || [])
-                  .filter((d) => d.status === "pending")
-                  .map((d) => d.id);
-                if (docsToTrain.length === 0) {
-                  alert("No pending documents to train.");
-                  return;
-                }
-                startTrainingForUser(user.id, docsToTrain);
-                refresh();
-              }}
-            >
-              Train all pending
-            </Button> */}
           </Box>
         </Box>
 
         {(isAdmin || isSuperAdmin) && (
           <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel id="scope-label">Scope</InputLabel>
+              <Typography>
+                {isSuperAdmin ? "Filter by Compnay" : "Filter by User"}
+              </Typography>
               <Select
-                labelId="scope-label"
-                value={scopeUserId}
-                label="Scope"
+                value={scopeUserId || "all"}
                 onChange={(e) => setScopeUserId(e.target.value as any)}
               >
-                <MenuItem value="me">Me</MenuItem>
-                <MenuItem value="all">All users</MenuItem>
+                {isSuperAdmin && <MenuItem value="all">All</MenuItem>}
+                {filterOptions?.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-            {/* <Typography variant="body2" color="text.secondary">
-              As Admin you can view all users when selecting "All users".
-            </Typography> */}
           </Box>
         )}
 
-        {/* <Paper sx={{ p: 2, mb: 3 }}> */}
-        {/* <Typography variant="subtitle1" sx={{ mb: 1 }}>
-          Uploaded Documents
-        </Typography> */}
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
           aria-label="Documents and Websites Tabs"
         >
           <Tab label="Uploaded Documents" />
-          <Tab label="Uploaded Websites" />
+          <Tab label="Scraped Websites" />
         </Tabs>
         <Box sx={{ mt: 2 }}>
-          {/* <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Filename</TableCell>
-                <TableCell>Uploaded</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell width={220}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {docs.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <Typography variant="body2" color="text.secondary">
-                      No documents uploaded.
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                docs.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell>{d?.filename}</TableCell>
-                    <TableCell>{d?.original_name}</TableCell>
-                    <TableCell>
-                      {new Date(d.created_at).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={d.status}
-                        size="small"
-                        color={
-                          d.status === "completed"
-                            ? "success"
-                            : d.status === "failed"
-                            ? "error"
-                            : "default"
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        // onClick={() => handleStartTraining(d.id)}
-                        title="Start training"
-                      >
-                        <PlayArrowIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          if (d.jobId) handleViewLogs(d.jobId);
-                          else alert("No training job associated yet.");
-                        }}
-                        title="View logs"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handlePreview(d)}
-                        title="Preview"
-                      >
-                        {" "}
-                        <VisibilityIcon />{" "}
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDownload(d)}
-                        title="Download"
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(d.id)}
-                        title="Delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table> */}
           {tabIndex === 0 && (
             <CustomTable
               isLoading={loading}
@@ -518,67 +483,7 @@ export default function UploadDocuments() {
             />
           )}
         </Box>
-        {/* </Paper> */}
-
-        {/* <Paper sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Training Jobs
-          </Typography>
-          {jobs.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No training jobs.
-            </Typography>
-          ) : (
-            jobs.map((j) => (
-              <Paper
-                key={j.id}
-                sx={{
-                  p: 1,
-                  mb: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box>
-                  <Typography variant="subtitle2">{j.id}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {j.status} · {j.progress}% ·{" "}
-                    {new Date(j.updatedAt).toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Button
-                    onClick={() => {
-                      setSelectedJob(j);
-                      setLogsOpen(true);
-                    }}
-                    sx={{ mr: 1 }}
-                  >
-                    Logs
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const newJob = startTrainingForUser(
-                        j.userId,
-                        j.documentIds
-                      );
-                      setTimeout(() => {
-                        refresh();
-                      }, 500);
-                      alert(`New retrain job ${newJob.id} created.`);
-                    }}
-                    variant="outlined"
-                  >
-                    Retrain
-                  </Button>
-                </Box>
-              </Paper>
-            ))
-          )}
-        </Paper> */}
       </Box>
-
       <UploadDialog
         open={openUpload}
         onClose={() => setOpenUpload(false)}
@@ -598,8 +503,9 @@ export default function UploadDocuments() {
       />
       <PreviewDialog
         open={previewOpen}
-        doc={previewDoc ?? undefined}
+        doc={previewDoc}
         onClose={() => setPreviewOpen(false)}
+        isSuperadmin={isSuperAdmin}
       />
       <WebsiteUploadDialog
         open={websiteDialogOpen}

@@ -1,20 +1,12 @@
-import axios from "axios";
 import { api } from "./api";
 import type { RequestResetPassword, ResetPassword } from "./types";
 import { apiPublic } from "./apiPublic";
-
-const API_URL = "http://127.0.0.1:8000";
 
 export async function login(username: string, password: string) {
   const formData = new URLSearchParams();
   formData.append("username", username);
   formData.append("password", password);
-  const resp = await axios.post(`${API_URL}/auth/login`, formData, {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-    },
-  });
+  const resp = await api.post(`/auth/login`, formData);
   return resp.data;
 }
 

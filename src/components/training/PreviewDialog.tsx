@@ -1,5 +1,4 @@
-// src/components/training/PreviewDialog.tsx
-import { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,47 +8,86 @@ import {
   Box,
   Typography,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
-import type { TrainingDocument } from "../../store/trainingMock";
 import { GridCloseIcon } from "@mui/x-data-grid";
+import {
+  previvewDocSuperadmin,
+  previvewDocUser,
+} from "../../services/training.service";
 
 type Props = {
   open: boolean;
-  doc?: TrainingDocument | null;
+  doc?: {
+    id: number;
+    filename: string;
+    title?: string;
+    created_at: string;
+    mimeType?: string;
+  } | null;
   onClose: () => void;
+  isSuperadmin: boolean;
 };
 
-export default function PreviewDialog({ open, doc, onClose }: Props) {
-  const blobUrl = useMemo(() => {
-    if (!doc || !doc.contentBase64) return null;
-    try {
-      // create blob from base64
-      const byteCharacters = atob(doc.contentBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+export default function PreviewDialog({
+  open,
+  doc,
+  onClose,
+  isSuperadmin,
+}: Props) {
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!doc || !open) return;
+    let url: string | null = null;
+    const fetchFile = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        let response;
+        if (isSuperadmin) {
+          response = await previvewDocSuperadmin(doc.id);
+        } else {
+          response = await previvewDocUser(doc.id);
+        }
+        const blob =
+          response instanceof Blob ? response : await response.blob?.();
+        const mime =
+          (response.headers?.get?.("content-type") as string) ||
+          doc.mimeType ||
+          blob?.type ||
+          "application/octet-stream";
+
+        url = URL.createObjectURL(blob);
+        setFileUrl(url);
+        setFileType(mime);
+      } catch (err: any) {
+        console.error("Error fetching preview file:", err);
+        setError("Unable to load file preview.");
+      } finally {
+        setLoading(false);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const mime = doc.mimeType ?? "application/octet-stream";
-      const blob = new Blob([byteArray], { type: mime });
-      return URL.createObjectURL(blob);
-    } catch (e) {
-      return null;
-    }
-  }, [doc]);
+    };
+
+    fetchFile();
+
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+      setFileUrl(null);
+      setFileType(null);
+    };
+  }, [open, doc]);
 
   if (!doc) return null;
 
   const lower = doc.filename.toLowerCase();
-  const isPdf = doc.mimeType === "application/pdf" || lower.endsWith(".pdf");
-  const isText =
-    lower.endsWith(".txt") ||
-    lower.endsWith(".csv") ||
-    doc.mimeType?.startsWith("text/");
-  const isDocx =
-    lower.endsWith(".docx") ||
-    doc.mimeType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  const isPdf = fileType === "application/pdf" || lower.endsWith(".pdf");
+  const isImage = /image\/(png|jpg|jpeg|gif|webp)/.test(fileType || "");
 
   return (
     <Dialog
@@ -59,6 +97,7 @@ export default function PreviewDialog({ open, doc, onClose }: Props) {
       maxWidth="lg"
       scroll="paper"
     >
+      {/* Header */}
       <DialogTitle
         sx={{
           display: "flex",
@@ -70,15 +109,17 @@ export default function PreviewDialog({ open, doc, onClose }: Props) {
         }}
       >
         Preview — {doc.title ?? doc.filename}
-        <IconButton sx={{ color: "background.default" }}>
-          <GridCloseIcon onClick={onClose} />
+        <IconButton sx={{ color: "background.default" }} onClick={onClose}>
+          <GridCloseIcon />
         </IconButton>
       </DialogTitle>
+
+      {/* Content */}
       <DialogContent dividers>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
             Filename: {doc.filename} · Uploaded:{" "}
-            {new Date(doc.uploadedAt).toLocaleString()}
+            {new Date(doc.created_at).toLocaleString()}
           </Typography>
         </Box>
 
@@ -87,95 +128,78 @@ export default function PreviewDialog({ open, doc, onClose }: Props) {
             height: "70vh",
             border: "1px solid #eee",
             borderRadius: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             overflow: "auto",
+            backgroundColor: "#fafafa",
           }}
         >
-          {isPdf && blobUrl ? (
-            // use object/embed for PDF
+          {loading && <CircularProgress size={40} color="primary" />}
+
+          {!loading && error && <Typography color="error">{error}</Typography>}
+
+          {!loading && !error && isPdf && fileUrl && (
             <object
-              data={blobUrl}
+              data={fileUrl}
               type="application/pdf"
               width="100%"
               height="100%"
+              aria-label="PDF Preview"
             >
               <Box sx={{ p: 2 }}>
                 <Typography variant="body2">
-                  PDF preview not supported by your browser.{" "}
-                  <a href={blobUrl} target="_blank" rel="noreferrer">
+                  PDF preview not supported.{" "}
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    download={doc.filename}
+                  >
                     Open in new tab
                   </a>
                 </Typography>
               </Box>
             </object>
-          ) : isText && doc.contentBase64 ? (
-            // decode base64 to text
-            <Box sx={{ p: 2 }}>
-              <pre
-                style={{
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                  fontFamily: "monospace",
-                }}
-              >
-                {(() => {
-                  try {
-                    // atob may throw for large payloads; wrap in try
-                    return decodeURIComponent(escape(atob(doc.contentBase64)));
-                  } catch (e) {
-                    // fallback: attempt atob only
-                    try {
-                      return atob(doc.contentBase64);
-                    } catch {
-                      return "Unable to render text preview.";
-                    }
-                  }
-                })()}
-              </pre>
-            </Box>
-          ) : isDocx ? (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body1">
-                DOCX preview is not supported in-app yet.
-              </Typography>
-              {blobUrl && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  <a href={blobUrl} download={doc.filename}>
-                    Download DOCX
-                  </a>
-                </Typography>
-              )}
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                display="block"
-                sx={{ mt: 2 }}
-              >
-                To view DOCX inline, integrate a backend conversion endpoint to
-                convert DOCX → HTML or PDF.
-              </Typography>
-            </Box>
-          ) : blobUrl ? (
-            // generic fallback: allow download / open
-            <Box sx={{ p: 3 }}>
+          )}
+
+          {!loading && !error && isImage && fileUrl && (
+            <Box
+              component="img"
+              src={fileUrl}
+              alt={doc.filename}
+              sx={{
+                maxHeight: "100%",
+                maxWidth: "100%",
+                objectFit: "contain",
+              }}
+            />
+          )}
+
+          {!loading && !error && !isPdf && !isImage && fileUrl && (
+            <Box sx={{ p: 3, textAlign: "center" }}>
               <Typography variant="body2">
                 Preview not available for this file type.
               </Typography>
               <Typography variant="body2" sx={{ mt: 1 }}>
-                <a href={blobUrl} target="_blank" rel="noreferrer">
-                  Open file in new tab
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  download={doc.filename}
+                >
+                  Download file
                 </a>
               </Typography>
-            </Box>
-          ) : (
-            <Box sx={{ p: 3 }}>
-              <Typography variant="body2">No preview available.</Typography>
             </Box>
           )}
         </Box>
       </DialogContent>
+
+      {/* Footer */}
       <DialogActions>
-        {blobUrl && (
-          <Button component="a" href={blobUrl} download={doc.filename}>
+        {fileUrl && (
+          <Button component="a" href={fileUrl} download={doc.filename}>
             Download
           </Button>
         )}

@@ -218,18 +218,17 @@ export default function UserList() {
       {
         field: "name",
         headerName: "Name",
-        width: 120,
         renderCell: (params) => {
           const fullname = params.row.firstname + " " + params.row.lastname;
           return <span>{fullname}</span>;
         },
       },
-      { field: "email", headerName: "Email", width: 220 },
-      { field: "contact_number", headerName: "Phone", width: 140 },
+      { field: "email", headerName: "Email" },
+      { field: "contact_number", headerName: "Phone", width: 100 },
       {
         field: "role",
         headerName: "Role",
-        width: 110,
+        width: 100,
         renderCell: (params: any) => {
           const value = params.row.role;
           return <span style={{ textTransform: "capitalize" }}>{value}</span>;
@@ -238,47 +237,14 @@ export default function UserList() {
       {
         field: "company_name",
         headerName: "Company",
-        width: 180,
-        // valueGetter: (params: any) => {
-        //   return companyMap[params] || "-";
-        // },
+        width: 122,
       },
-      // {
-      //   field: "status",
-      //   headerName: "Status",
-      //   width: 110,
-      //   renderCell: (params: any) => {
-      //     const isActive = params.row.is_active;
-      //     return (
-      //       <span style={{ color: isActive ? "green" : "red" }}>
-      //         {isActive ? "Active" : "InActive"}
-      //       </span>
-      //     );
-      //   },
-      // },
-      // {
-      //   field: "actions",
-      //   headerName: "Actions",
-      //   width: 140,
-      //   sortable: false,
-      //   renderCell: (params) => {
-      //     const row = params.row as User;
-      //     return (
-      //       <>
-      //         <IconButton size="small" onClick={() => handleEdit(row)}>
-      //           <EditIcon fontSize="small" />
-      //         </IconButton>
-      //         <IconButton size="small" onClick={() => handleDelete(row)}>
-      //           <DeleteIcon fontSize="small" />
-      //         </IconButton>
-      //       </>
-      //     );
-      //   },
-      // },
+      { field: "city", headerName: "City" },
+      { field: "address", headerName: "Address" },
       {
         field: "actions",
         headerName: "Actions",
-        width: 140,
+        width: 100,
         sortable: false,
         renderCell: (params) => {
           const row = params.row;

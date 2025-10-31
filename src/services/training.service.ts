@@ -22,6 +22,15 @@ export async function listDocuments(params?: {my_docs_only: string}) {
   return resp.data;
 }
 
+export async function listDocumentsSuperadmin(params?: {
+  tenant_code: string | undefined;
+}) {
+  const resp = await api.get<DocumentOut[]>("/documents/superadmin/all", {
+    params,
+  });
+  return resp.data;
+}
+
 export async function deleteDocument(document_id: number) {
   const resp = await api.delete(`/documents/${document_id}`);
   return resp.data;
@@ -42,7 +51,29 @@ export async function listWebsite(params?: { my_docs_only: string }) {
   return resp.data;
 }
 
+export async function listWebsitesSuperadmin(params?: {
+  tenant_code: string | undefined;
+}) {
+  const resp = await api.get("/websites/superadmin/all", { params });
+  return resp.data;
+}
+
 export async function deleteWebsite(id: number) {
   const resp = await api.delete(`/websites/${id}`);
   return resp.data;
 }
+
+export async function previvewDocSuperadmin(id: number) {
+  const resp = await api.get(`/documents/superadmin/${id}/preview`, {
+    responseType: "blob",
+  });
+  return resp.data;
+}
+
+export async function previvewDocUser(id: number) {
+  const resp = await api.get(`/documents/${id}/preview`, {
+    responseType: "blob", 
+  });
+  return resp.data;
+}
+ 

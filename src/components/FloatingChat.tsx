@@ -252,7 +252,7 @@ const FloatingChat: React.FC = () => {
       {/* Chatbot Toggle Button */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
+        className="fixed bottom-20 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
       >
         <svg
           width="22"

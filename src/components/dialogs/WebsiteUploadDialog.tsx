@@ -30,8 +30,16 @@ export function WebsiteUploadDialog({
   isLoading,
 }: Props) {
   const [urls, setUrls] = useState<string[]>([""]);
+  const [error, setError] = useState<(string | null)[]>([]);
 
   const handleUrlChange = (index: number, value: string) => {
+    const newErrors = [...error];
+    if (value.trim() === "" || isValidUrl(value)) {
+      newErrors[index] = null; // clear error
+    } else {
+      newErrors[index] = "Invalid URL";
+    }
+    setError(newErrors);
     const newUrls = [...urls];
     newUrls[index] = value;
     setUrls(newUrls);
@@ -48,16 +56,28 @@ export function WebsiteUploadDialog({
     setUrls(urls.filter((_, idx) => idx !== index));
   };
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = () => {
     // Filter out empty URLs if desired
     const filteredUrls = urls.filter((url) => url.trim() !== "");
-    if (filteredUrls.length > 0 && !isLoading) {
+    const noErrors = error.every((err) => err === null || err === "");
+
+    if (filteredUrls.length > 0 && !isLoading && noErrors) {
       onSubmit(filteredUrls);
+      setUrls([""]);
     }
   };
 
   const handleClose = () => {
-    setUrls([]);
+    setUrls([""]);
     onClose();
   };
 
@@ -73,7 +93,7 @@ export function WebsiteUploadDialog({
           color: "background.default",
         }}
       >
-        Website URLs
+        Scrape Website
         <IconButton sx={{ color: "background.default" }} onClick={handleClose}>
           <GridCloseIcon />
         </IconButton>
@@ -97,6 +117,8 @@ export function WebsiteUploadDialog({
               value={url}
               disabled={isLoading}
               onChange={(e) => handleUrlChange(index, e.target.value)}
+              error={!!error[index]}
+              helperText={error[index]}
             />
             <IconButton
               onClick={() => handleRemoveField(index)}
@@ -127,14 +149,13 @@ export function WebsiteUploadDialog({
         <Button
           onClick={handleSubmit}
           variant="contained"
-          startIcon={<UploadIcon />}
           disabled={urls.every((url) => url.trim() === "") || isLoading}
         >
-          {isLoading ? "Uploading..." : "Upload"}
+          {isLoading ? "Scraping..." : "Scrape"}
         </Button>
       </DialogActions>
       {/* Loading Overlay */}
-      <LoadingOverlay loading={isLoading} content="Upload inprogress..." />
+      <LoadingOverlay loading={isLoading} content="Scraping inprogress..." />
     </Dialog>
   );
 }

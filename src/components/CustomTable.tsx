@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 type Props = {
@@ -7,23 +8,54 @@ type Props = {
 };
 
 export default function CustomTable({ gridRows, columns, isLoading }: Props) {
-  const column = columns.map((col) => ({
-    ...col,
-    flex: col.flex ?? 1, // auto-adjust width based on available space
-    minWidth: col.minWidth ?? 150, // ensures readability, even on smaller screens
-  }));
+  const adjustedColumns = columns.map((col) => {
+    // ✅ If explicit width is provided → fixed column
+    if (col.width) {
+      return {
+        ...col,
+        minWidth: col.minWidth ?? col.width,
+        flex: 0, // prevent expansion when width is defined
+      };
+    }
+
+    // ✅ Otherwise → flexible column with sensible defaults
+    return {
+      ...col,
+      flex: col.flex ?? 1,
+      minWidth: col.minWidth ?? 150,
+    };
+  });
 
   return (
+    <Box
+      sx={{
+        // width: "fit-content", // 👈 Only take as much width as needed
+        maxWidth: "100%",
+        overflowX: "auto",
+        // ✅ Hide scrollbar visually on all browsers
+        "&::-webkit-scrollbar": { display: "none" }, // Chrome, Safari
+        msOverflowStyle: "none", // IE, Edge
+        scrollbarWidth: "none", // Firefox
+
+        // ✅ Specifically target the DataGrid’s internal virtual scroller
+        "& .MuiDataGrid-virtualScroller": {
+          overflowY: "hidden !important",
+        },
+        "& .MuiDataGrid-main": {
+          overflowY: "hidden !important",
+        },
+      }}
+    >
       <DataGrid
         rows={gridRows}
-        columns={column}
+        columns={adjustedColumns}
         pageSizeOptions={[5, 10, 25]}
         disableRowSelectionOnClick
         loading={isLoading}
         initialState={{
           pagination: { paginationModel: { pageSize: 10, page: 0 } },
         }}
-        rowHeight={45}
+        autoHeight
         scrollbarSize={0}
         sx={{
           flex: 1,
@@ -58,5 +90,6 @@ export default function CustomTable({ gridRows, columns, isLoading }: Props) {
           },
         }}
       />
+    </Box>
   );
 }

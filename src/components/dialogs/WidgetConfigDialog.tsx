@@ -118,6 +118,7 @@ export default function WidgetConfigDialog({
   window.WIDGET_CONFIG = {
     apiUrl: '${apiUrl}',
     widgetKey: '${widgetKey}'
+    tenant_code: '${tenantCode}'
   };
 </script>
 <script src="${apiUrl}/static/chatbot-widget.js"></script>`;
@@ -135,6 +136,7 @@ export default function WidgetConfigDialog({
     const WIDGET_CONFIG = {
       apiUrl: '${apiUrl}',
       widgetKey: '${widgetKey}'
+      tenant_code: '${tenantCode}'
     };
   </script>
 </body>

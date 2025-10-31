@@ -140,28 +140,15 @@ export default function CompanyList() {
 
   const columns: GridColDef[] = useMemo(
     () => [
-      { field: "name", headerName: "Name", width: 150 },
-      { field: "email", headerName: "Email", width: 200 },
-      { field: "phone", headerName: "Phone", width: 150 },
-      { field: "address", headerName: "Address", flex: 1 },
-      // { field: "slug_url", headerName: "URL", width: 120 },
-      // {
-      //   field: "status",
-      //   headerName: "Status",
-      //   width: 110,
-      //   renderCell: (params: any) => {
-      //     const isActive = params.row.status === "active" ? true : false;
-      //     return (
-      //       <span style={{ color: isActive ? "green" : "red" }}>
-      //         {isActive ? "Active" : "InActive"}
-      //       </span>
-      //     );
-      //   },
-      // },
+      { field: "name", headerName: "Name"},
+      { field: "email", headerName: "Email"},
+      { field: "phone", headerName: "Phone", width: 100 },
+      { field: "website", headerName: "Website"},
+      { field: "city", headerName: "City", width: 120},
+      { field: "address", headerName: "Address"},
       {
         field: "actions",
         headerName: "Actions",
-        width: 140,
         sortable: false,
         renderCell: (params) => {
           const row = params.row as Company;

@@ -180,7 +180,7 @@ export default function CompanyChatDialog({
                   {msg.content}
                 </Typography>
 
-                {msg.sources && msg.sources.length > 0 && (
+                {/* {msg.sources && msg.sources.length > 0 && (
                   <Box sx={{ mt: 1, pt: 1, borderTop: "1px solid #e0e0e0" }}>
                     <Typography variant="caption" display="block" gutterBottom>
                       <strong>Sources:</strong>
@@ -193,7 +193,7 @@ export default function CompanyChatDialog({
                       ))}
                     </Box>
                   </Box>
-                )}
+                )} */}
               </Paper>
             </Box>
           ))}
@@ -221,14 +221,14 @@ export default function CompanyChatDialog({
         >
           <TextField
             fullWidth
-            multiline
-            maxRows={3}
+            // multiline
+            // maxRows={3}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             disabled={loading}
-            size="small"
+            size="medium"
           />
           <IconButton
             onClick={handleSendMessage}

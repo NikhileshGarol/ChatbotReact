@@ -19,6 +19,7 @@ import { GridCloseIcon } from "@mui/x-data-grid";
 import { City, Country, State } from "country-state-city";
 import RHFSelectField from "../RHF/RHFSelectField";
 import LoadingOverlay from "../LoadingOverlay";
+import { getCompanyDetailsById } from "../../services/company.service";
 
 type Props = {
   open: boolean;
@@ -55,14 +56,7 @@ export default function CompanyDialog({
 
   useEffect(() => {
     if (initial) {
-      setIsLoading(true);
-      // Simulate async with a timeout or real async call
-      async function resetForm() {
-        await new Promise((resolve) => setTimeout(resolve, 500)); // example delay
-        methods.reset({ ...initial });
-        setIsLoading(false);
-      }
-      resetForm();
+      getCompanyById();
     } else {
       methods.reset({
         name: "",
@@ -79,6 +73,18 @@ export default function CompanyDialog({
       });
     }
   }, [initial, open]);
+
+  const getCompanyById = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getCompanyDetailsById(initial.tenant_code);
+      methods.reset({ ...response });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { handleSubmit, watch } = methods;
 
@@ -106,9 +112,11 @@ export default function CompanyDialog({
         value: s.isoCode,
       }));
       setStateOptions(states);
-      methods.setValue("state", ""); // reset state
-      setCityOptions([]);
-      methods.setValue("city", ""); // reset city
+      if (!initial) {
+        methods.setValue("state", ""); // reset state
+        setCityOptions([]);
+        methods.setValue("city", ""); // reset city
+      }
     }
   }, [selectedCountry, methods]);
 
@@ -121,7 +129,9 @@ export default function CompanyDialog({
         })
       );
       setCityOptions(cities);
-      methods.setValue("city", ""); // reset city if state changes
+      if (!initial) {
+        methods.setValue("city", ""); // reset city if state changes
+      }
     }
   }, [selectedState, selectedCountry, methods]);
 
