@@ -61,7 +61,7 @@ export default function WidgetConfigDialog({
   const [tabValue, setTabValue] = useState(0);
   const { showSnackbar } = useSnackbar();
 
-  const apiUrl = "http://127.0.0.1:8000"; // Update this with your actual API URL
+  const apiUrl = import.meta.env.VITE_API_BASE_URL; // Update this with your actual API URL
 
   useEffect(() => {
     if (open) {
@@ -290,7 +290,7 @@ export default function WidgetConfigDialog({
             </li>
             <li>
               <Typography variant="body2" paragraph>
-                <strong>Update API URL:</strong> Replace http://127.0.0.1:8000
+                <strong>Update API URL:</strong> Replace {apiUrl}
                 with your production API URL
               </Typography>
             </li>

@@ -15,6 +15,7 @@ import {
   previvewDocSuperadmin,
   previvewDocUser,
 } from "../../services/training.service";
+import formatDateLocal from "../../utils/formatDateLocal";
 
 type Props = {
   open: boolean;
@@ -119,7 +120,7 @@ export default function PreviewDialog({
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
             Filename: {doc.filename} · Uploaded:{" "}
-            {new Date(doc.created_at).toLocaleString()}
+            {formatDateLocal(doc.created_at)}
           </Typography>
         </Box>
 
@@ -181,7 +182,7 @@ export default function PreviewDialog({
               <Typography variant="body2">
                 Preview not available for this file type.
               </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Button variant="contained" sx={{ mt: 1 }}>
                 <a
                   href={fileUrl}
                   target="_blank"
@@ -190,7 +191,7 @@ export default function PreviewDialog({
                 >
                   Download file
                 </a>
-              </Typography>
+              </Button>
             </Box>
           )}
         </Box>
@@ -199,11 +200,11 @@ export default function PreviewDialog({
       {/* Footer */}
       <DialogActions>
         {fileUrl && (
-          <Button component="a" href={fileUrl} download={doc.filename}>
+          <Button variant="contained" component="a" href={fileUrl} download={doc.filename}>
             Download
           </Button>
         )}
-        <Button onClick={onClose}>Close</Button>
+        <Button variant="outlined" onClick={onClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );

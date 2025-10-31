@@ -36,16 +36,11 @@ import type { DocumentOut, FilterOption } from "../../services/types";
 import CustomTable from "../../components/CustomTable";
 import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { listCompanies } from "../../services/company.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import formatDateLocal from "../../utils/formatDateLocal";
 
 export default function UploadDocuments() {
   const { user } = useAuth();
@@ -279,6 +274,7 @@ export default function UploadDocuments() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("File download failed:", error);
+      showSnackbar("error", "File download failed");
     }
   };
 
@@ -302,10 +298,7 @@ export default function UploadDocuments() {
       headerName: "Uploaded At",
       renderCell: (params) => {
         const date = params?.row?.created_at;
-        const localFormatted = dayjs
-          .utc(date)
-          .local()
-          .format("DD-MM-YYYY hh:mm A");
+        const localFormatted = formatDateLocal(date);
 
         return <span>{localFormatted}</span>;
       },
@@ -369,10 +362,7 @@ export default function UploadDocuments() {
       headerName: "Scraped At",
       renderCell: (params) => {
         const date = params?.row?.created_at;
-        const localFormatted = dayjs
-          .utc(date)
-          .local()
-          .format("DD-MM-YYYY hh:mm A");
+        const localFormatted = formatDateLocal(date);
 
         return <span>{localFormatted}</span>;
       },
@@ -394,7 +384,7 @@ export default function UploadDocuments() {
             >
               <OpenInNewIcon />
             </IconButton>
-                        <Divider
+            <Divider
               orientation="vertical"
               flexItem
               sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
@@ -424,7 +414,7 @@ export default function UploadDocuments() {
             mb: 2,
           }}
         >
-          <Typography variant="h6">Documents & Training (Per User)</Typography>
+          <Typography variant="h6">Documents & Websites</Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button variant="contained" onClick={() => setOpenUpload(true)}>
               Upload document

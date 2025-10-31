@@ -13,6 +13,7 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import RHFPasswordField from "../../components/RHF/RHFPasswordField";
 
 const schema = yup
   .object({
@@ -138,12 +139,11 @@ export default function LoginPage() {
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 <RHFTextField name="email" label="Email" type="email" />
-                <RHFTextField
+                <RHFPasswordField
                   name="password"
                   label="Password"
-                  type="password"
+                  placeholder="Enter password"
                 />
-
                 <Box
                   sx={{
                     mt: 3,

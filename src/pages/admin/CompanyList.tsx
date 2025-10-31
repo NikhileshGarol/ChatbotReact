@@ -150,6 +150,7 @@ export default function CompanyList() {
         field: "actions",
         headerName: "Actions",
         sortable: false,
+        width: 153,
         renderCell: (params) => {
           const row = params.row as Company;
           return (

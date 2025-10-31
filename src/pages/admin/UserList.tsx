@@ -201,128 +201,119 @@ export default function UserList() {
     }
   };
 
-  const handleSave = (data: any) => {
-    if (editing) {
-      if (isSuperAdmin) {
-        handleUpdateAdmin(data);
-      } else {
-        handleUpdateUser(data);
-      }
-    } else {
-      !isSuperAdmin ? handleCreateUser(data) : handleCreateAdminUser(data);
-    }
-  };
+const handleSave = (data: any) => {
+  console.log(data)
+  if (editing) {
+    return isSuperAdmin ? handleUpdateAdmin(data) : handleUpdateUser(data);
+  }
 
-  const columns: GridColDef[] = useMemo(
-    () => [
-      {
-        field: "name",
-        headerName: "Name",
-        renderCell: (params) => {
-          const fullname = params.row.firstname + " " + params.row.lastname;
-          return <span>{fullname}</span>;
-        },
-      },
-      { field: "email", headerName: "Email" },
-      { field: "contact_number", headerName: "Phone", width: 100 },
-      {
-        field: "role",
-        headerName: "Role",
-        width: 100,
-        renderCell: (params: any) => {
-          const value = params.row.role;
-          return <span style={{ textTransform: "capitalize" }}>{value}</span>;
-        },
-      },
-      {
-        field: "company_name",
-        headerName: "Company",
-        width: 122,
-      },
-      { field: "city", headerName: "City" },
-      { field: "address", headerName: "Address" },
-      {
-        field: "actions",
-        headerName: "Actions",
-        width: 100,
-        sortable: false,
-        renderCell: (params) => {
-          const row = params.row;
-          return (
-            <Box sx={{ display: "flex", mt: "5px" }}>
-              <IconButton
-                title="Edit User details"
-                color="primary"
-                size="small"
-                onClick={() => handleEdit(row)}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
-              />
-              <IconButton
-                title="Delete User"
-                color="primary"
-                size="small"
-                onClick={() => handleDelete(row)}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          );
-        },
-      },
-    ],
-    []
-  );
+  return isSuperAdmin ? handleCreateAdminUser(data) : handleCreateUser(data);
+};
 
-  const gridRows: GridRowsProp = Array.isArray(rows)
-    ? rows.map((r) => ({ id: r.id, ...r }))
-    : [];
+const columns: GridColDef[] = useMemo(
+  () => [
+    {
+      field: "name",
+      headerName: "Name",
+      renderCell: (params) => {
+        const fullname = params.row.firstname + " " + params.row.lastname;
+        return <span>{fullname}</span>;
+      },
+    },
+    { field: "email", headerName: "Email" },
+    { field: "contact_number", headerName: "Phone", width: 100 },
+    {
+      field: "role",
+      headerName: "Role",
+      width: 100,
+      renderCell: (params: any) => {
+        const value = params.row.role;
+        return <span style={{ textTransform: "capitalize" }}>{value}</span>;
+      },
+    },
+    {
+      field: "company_name",
+      headerName: "Company",
+      width: 122,
+    },
+    { field: "city", headerName: "City" },
+    { field: "address", headerName: "Address" },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      sortable: false,
+      renderCell: (params) => {
+        const row = params.row;
+        return (
+          <Box sx={{ display: "flex", mt: "5px" }}>
+            <IconButton
+              title="Edit User details"
+              color="primary"
+              size="small"
+              onClick={() => handleEdit(row)}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+            />
+            <IconButton
+              title="Delete User"
+              color="primary"
+              size="small"
+              onClick={() => handleDelete(row)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        );
+      },
+    },
+  ],
+  []
+);
 
-  return (
-    <AdminLayout>
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6">
-            {isSuperAdmin ? "Admins" : "Users"}
-          </Typography>
-          <Button variant="contained" onClick={handleAdd}>
-            Add {isSuperAdmin ? "admin" : "user"}
-          </Button>
-        </Box>
-        <CustomTable
-          isLoading={loading}
-          gridRows={gridRows}
-          columns={columns}
-        />
+const gridRows: GridRowsProp = Array.isArray(rows)
+  ? rows.map((r) => ({ id: r.id, ...r }))
+  : [];
+
+return (
+  <AdminLayout>
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6">Users</Typography>
+        <Button variant="contained" onClick={handleAdd}>
+          Add user
+        </Button>
       </Box>
+      <CustomTable isLoading={loading} gridRows={gridRows} columns={columns} />
+    </Box>
 
-      <UserDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        onSave={handleSave}
-        initial={editing}
-        loading={loading}
-      />
+    <UserDialog
+      open={openDialog}
+      onClose={() => setOpenDialog(false)}
+      onSave={handleSave}
+      initial={editing}
+      loading={loading}
+    />
 
-      <DeleteDialog
-        open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={(data) => confirmDelete(data)}
-        data={toDelete}
-        title={isSuperAdmin ? "Admin" : "User"}
-      />
-    </AdminLayout>
-  );
+    <DeleteDialog
+      open={deleteConfirmOpen}
+      onClose={() => setDeleteConfirmOpen(false)}
+      onConfirm={(data) => confirmDelete(data)}
+      data={toDelete}
+      title={isSuperAdmin ? "Admin" : "User"}
+    />
+  </AdminLayout>
+);
 }

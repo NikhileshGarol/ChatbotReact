@@ -10,6 +10,7 @@ import {
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import RHFPasswordField from "../../components/RHF/RHFPasswordField";
 
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -109,15 +110,15 @@ export default function ForgotPassword() {
               onSubmit={methodsNewPass.handleSubmit(onSubmitReset)}
               noValidate
             >
-              <RHFTextField
-                type="password"
+              <RHFPasswordField
                 name="password"
                 label="New Password"
+                placeholder="New Password"
               />
-              <RHFTextField
-                type="password"
+              <RHFPasswordField
                 name="confirm_password"
                 label="Confirm Password"
+                placeholder="Confirm Password"
               />
               <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
                 <Button type="submit" variant="contained">

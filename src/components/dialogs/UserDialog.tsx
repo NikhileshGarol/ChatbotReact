@@ -24,6 +24,7 @@ import {
 import { City, Country, State } from "country-state-city";
 import { getUserById } from "../../services/user.service";
 import LoadingOverlay from "../LoadingOverlay";
+import RHFPasswordField from "../RHF/RHFPasswordField";
 
 type Props = {
   open: boolean;
@@ -59,7 +60,7 @@ export default function UserDialog({
   >([]);
 
   const methods = useForm({
-    resolver: yupResolver(userSchema, { context: { isSuperAdmin, initial } }),
+    resolver: yupResolver(userSchema({ isSuperAdmin, initial })),
     defaultValues: {
       display_name: "",
       email: "",
@@ -82,13 +83,13 @@ export default function UserDialog({
 
   const selectedCountry = watch("country");
   const selectedState = watch("state");
-  const selectedCompany = watch("company_name")
+  const selectedCompany = watch("company_name");
 
   useEffect(() => {
-    if(selectedCompany) {
-      methods.setValue("tenant_code", selectedCompany)
+    if (selectedCompany) {
+      methods.setValue("tenant_code", selectedCompany);
     }
-  },[selectedCompany])
+  }, [selectedCompany]);
 
   useEffect(() => {
     if (selectedCountry) {
@@ -123,7 +124,7 @@ export default function UserDialog({
   useEffect(() => {
     if (initial && !isSuperAdmin) {
       fetchUserById();
-    } else if (open && initial && isSuperAdmin) {
+    } else if (open && isSuperAdmin) {
       getAllCompanies();
       fetchAdminById();
     } else {
@@ -174,10 +175,11 @@ export default function UserDialog({
   useEffect(() => {
     if (watchedCompanyId) {
       const selectedCompany = companyList.find(
-        (c) => c.id === watchedCompanyId
+        (c) => c.name === watchedCompanyId
       );
       if (selectedCompany) {
-        const newTenantCode = selectedCompany.tenant_code?.split("-")[0] || "";
+        const newTenantCode = selectedCompany.tenant_code;
+        console.log(newTenantCode);
         setValue("tenant_code", newTenantCode);
       }
     }
@@ -193,6 +195,7 @@ export default function UserDialog({
   };
 
   const submit = (data: any) => {
+    console.log(data);
     onSave(data);
   };
 
@@ -214,7 +217,11 @@ export default function UserDialog({
         </IconButton>
       </DialogTitle>
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(submit)}>
+        <form
+          onSubmit={handleSubmit(submit, (err) =>
+            console.log("Validation Errors:", err)
+          )}
+        >
           <DialogContent
             sx={{
               overflowY: "auto",
@@ -249,11 +256,10 @@ export default function UserDialog({
               </Grid>
               {!initial && (
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <RHFTextField
-                    type="password"
+                  <RHFPasswordField
                     name="password"
                     label="Password"
-                    placeholder="Password"
+                    placeholder="Enter password"
                   />
                 </Grid>
               )}
