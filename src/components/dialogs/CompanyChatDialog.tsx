@@ -156,7 +156,7 @@ export default function CompanyChatDialog({
                     src={profileImage || "http://www.gravatar.com/avatar/?d=mp"}
                   />
                 ) : (
-                  <Avatar sx={{ height: "30px", width: "30px" }} alt="Bot">
+                  <Avatar sx={{ height: "30px", width: "30px", bgcolor: 'primary.main' }} alt="Bot">
                     <SmartToyIcon />
                   </Avatar>
                 )}

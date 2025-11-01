@@ -38,7 +38,7 @@ export default function RHFPasswordField({
       render={({ field, fieldState }) => (
         <>
           {label && (
-            <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            <Typography variant="subtitle2" sx={{color: 'grey' }}>
               {label} {required && <span style={{ color: "#D32F2F" }}>*</span>}
             </Typography>
           )}

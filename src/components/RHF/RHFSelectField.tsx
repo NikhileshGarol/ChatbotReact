@@ -28,7 +28,7 @@ export default function RHFSelectField({
       defaultValue={defaultValue}
       render={({ field, fieldState }) => (
         <>
-          <Typography variant="subtitle2">
+          <Typography color="grey" variant="subtitle2">
             {label} <span style={{ color: "#D32F2F" }}>*</span>
           </Typography>
           <FormControl error={!!fieldState.error} fullWidth>

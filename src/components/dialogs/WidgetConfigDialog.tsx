@@ -290,7 +290,7 @@ export default function WidgetConfigDialog({
             </li>
             <li>
               <Typography variant="body2" paragraph>
-                <strong>Update API URL:</strong> Replace {apiUrl}
+                <strong>Update API URL:</strong> Replace {apiUrl}{' '}
                 with your production API URL
               </Typography>
             </li>

@@ -306,7 +306,7 @@ const FloatingChat: React.FC = () => {
                 >
                   <Box sx={{ display: "flex", alignItems: "end", mx: 1 }}>
                     {chat.role === "bot" ? (
-                      <Avatar sx={{ height: "30px", width: "30px" }}>
+                      <Avatar sx={{ height: "30px", width: "30px", bgcolor: 'primary.main' }}>
                         <SmartToyIcon />
                       </Avatar>
                     ) : (

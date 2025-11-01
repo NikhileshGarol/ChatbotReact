@@ -18,8 +18,8 @@ const schema = yup
   .object({
     email: yup
       .string()
-      .matches(emailRegex, "Invalid email format")
-      .required("Email is required"),
+      .required("Email is required")
+      .matches(emailRegex, "Invalid email format"),
   })
   .required();
 
@@ -80,16 +80,39 @@ export default function ForgotPassword() {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        background: "linear-gradient(135deg, #343537ff 0%, #4f7abfff 100%)",
+        position: "relative",
+        p: 2,
       }}
     >
-      <Paper sx={{ width: 420, p: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Forgot Password
-        </Typography>
+      <Paper
+        sx={{
+          width: 420,
+          p: 4,
+          borderRadius: 3,
+          boxShadow: 6,
+          overflow: "hidden",
+          backgroundColor: "#fff",
+        }}
+        elevation={4}
+      >
+        <Box>
+          <Typography textAlign={"center"} variant="h6">
+            {step === "request" ? "Forgot Password" : "Reset Password"}
+          </Typography>
+          <Typography
+            color="grey"
+            variant="body2"
+            textAlign={"center"}
+            gutterBottom
+          >
+            {step === "request" && "Enter registered Email to reset password"}
+          </Typography>
+        </Box>
 
         {step === "request" && (
           <FormProvider {...methods}>
@@ -110,11 +133,13 @@ export default function ForgotPassword() {
               onSubmit={methodsNewPass.handleSubmit(onSubmitReset)}
               noValidate
             >
+              <Box sx={{mb:2}}>
               <RHFPasswordField
                 name="password"
                 label="New Password"
                 placeholder="New Password"
               />
+              </Box>
               <RHFPasswordField
                 name="confirm_password"
                 label="Confirm Password"

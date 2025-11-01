@@ -27,7 +27,7 @@ export default function RHFTextField({
       defaultValue={defaultValue}
       render={({ field, fieldState }) => (
         <>
-          <Typography variant="subtitle2">
+          <Typography sx={{color: 'grey'}} variant="subtitle2">
             {label} <span style={{ color: "#D32F2F" }}>*</span>
           </Typography>
           <TextField
