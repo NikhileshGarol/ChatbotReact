@@ -214,6 +214,7 @@ export default function UploadDocuments() {
 
   const handleDeletWebsite = async () => {
     try {
+      setLoading(true);
       const resp = await deleteWebsite(selectedRow);
       setOpenDeleteDialog(false);
       setSelectedRow(null);
@@ -229,11 +230,14 @@ export default function UploadDocuments() {
       const message = error.response.data.detail || "Something went wrong";
       console.error(error);
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteDocument = async () => {
     try {
+      setLoading(true);
       const resp = await deleteDocument(selectedRow);
       setOpenDeleteDialog(false);
       setSelectedRow(null);
@@ -248,6 +252,8 @@ export default function UploadDocuments() {
       const message = error.response.data.detail || "Something went wrong";
       console.error(error);
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -507,10 +513,11 @@ export default function UploadDocuments() {
       />
       <DeleteDialog
         open={openDeleteDialog}
-        title={`${deleteType === 'document' ? "File" : "Website"}`}
+        title={`${deleteType === "document" ? "File" : "Website"}`}
         content={`Are you sure you want to delete this ${deleteType}?`}
         onClose={() => setOpenDeleteDialog(false)}
         onConfirm={confirmDelete}
+        loading={loading}
       />
       <PreviewDialog
         open={previewOpen}

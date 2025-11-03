@@ -313,6 +313,7 @@ return (
       onConfirm={(data) => confirmDelete(data)}
       data={toDelete}
       title={isSuperAdmin ? "Admin" : "User"}
+      loading={loading}
     />
   </AdminLayout>
 );

@@ -1,5 +1,6 @@
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -9,6 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { GridCloseIcon } from "@mui/x-data-grid";
+import LoadingOverlay from "../LoadingOverlay";
 
 type Props = {
   open: boolean;
@@ -17,6 +19,7 @@ type Props = {
   title: string;
   content?: string;
   data?: any;
+  loading?: boolean;
 };
 
 export default function DeleteDialog({
@@ -26,6 +29,7 @@ export default function DeleteDialog({
   title,
   content,
   data,
+  loading,
 }: Props) {
   return (
     <Dialog open={open} maxWidth={"sm"}>
@@ -45,7 +49,7 @@ export default function DeleteDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ paddingY: "15px", }}>
+        <DialogContentText sx={{ paddingY: "15px" }}>
           <Typography fontSize={15} variant="body2">
             {content
               ? content
@@ -53,14 +57,19 @@ export default function DeleteDialog({
           </Typography>
         </DialogContentText>
       </DialogContent>
-      <DialogActions sx={{boxShadow: 2}}>
+      <DialogActions sx={{ boxShadow: 2 }}>
         <Button variant="outlined" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={() => onConfirm(data)}>
-          Delete
+        <Button
+          disabled={loading}
+          variant="contained"
+          onClick={() => onConfirm(data)}
+        >
+          {loading ? "Deleting.." : "Delete"}
         </Button>
       </DialogActions>
+      {loading && <LoadingOverlay content="Deleting.." loading={loading} />}
     </Dialog>
   );
 }

@@ -365,9 +365,9 @@ export default function UserDialog({
             <Button variant="outlined" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained">
+            <Button disabled={loading} type="submit" variant="contained">
               {loading ? (
-                <CircularProgress size={24} sx={{ color: "white" }} />
+                <CircularProgress size={24} color="inherit" />
               ) : initial ? (
                 "Save"
               ) : (
@@ -377,7 +377,12 @@ export default function UserDialog({
           </DialogActions>
         </form>
       </FormProvider>
-      {isLoading && <LoadingOverlay loading={isLoading} />}
+      {isLoading && (
+        <LoadingOverlay content="Loading details.." loading={isLoading} />
+      )}
+      {loading && (
+        <LoadingOverlay content={"Saving changes.."} loading={loading} />
+      )}
     </Dialog>
   );
 }

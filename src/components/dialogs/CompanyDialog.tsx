@@ -266,7 +266,8 @@ export default function CompanyDialog({
           </DialogActions>
         </form>
       </FormProvider>
-      {isLoading && <LoadingOverlay loading={isLoading} />}
+      {isLoading && <LoadingOverlay content="Loading details.." loading={isLoading} />}
+      {loading && <LoadingOverlay content="Saving changes.." loading={loading} />}
     </Dialog>
   );
 }

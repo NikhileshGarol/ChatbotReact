@@ -54,6 +54,7 @@ export default function CompanyList() {
 
   const handleAddCompany = async (data: CompanyCreatePayload) => {
     try {
+      setLoading(true);
       await createCompany(data);
       refresh();
       setOpenDialog(false);
@@ -64,12 +65,15 @@ export default function CompanyList() {
         error?.message ||
         "Something went wrong";
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateCompanyDetails = async (data: any) => {
     const tenantCode = data.tenant_code;
     try {
+      setLoading(true);
       const response = await updateCompanyDetails(tenantCode, data);
       refresh();
       setOpenDialog(false);
@@ -80,11 +84,14 @@ export default function CompanyList() {
         error?.message ||
         "Something went wrong";
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteCompany = async (data: any) => {
     try {
+      setLoading(true);
       await deleteCompanyDetails(data.tenant_code);
       setDeleteConfirmOpen(false);
       setToDelete(null);
@@ -96,6 +103,8 @@ export default function CompanyList() {
         error?.message ||
         "Something went wrong";
       showSnackbar("error", message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,12 +149,12 @@ export default function CompanyList() {
 
   const columns: GridColDef[] = useMemo(
     () => [
-      { field: "name", headerName: "Name"},
-      { field: "email", headerName: "Email"},
+      { field: "name", headerName: "Name" },
+      { field: "email", headerName: "Email" },
       { field: "phone", headerName: "Phone", width: 100 },
-      { field: "website", headerName: "Website"},
-      { field: "city", headerName: "City", width: 120},
-      { field: "address", headerName: "Address"},
+      { field: "website", headerName: "Website" },
+      { field: "city", headerName: "City", width: 120 },
+      { field: "address", headerName: "Address" },
       {
         field: "actions",
         headerName: "Actions",
@@ -241,6 +250,7 @@ export default function CompanyList() {
         onClose={() => setOpenDialog(false)}
         onSave={handleSave}
         initial={editing}
+        loading={loading}
       />
       <DeleteDialog
         open={deleteConfirmOpen}
@@ -249,6 +259,7 @@ export default function CompanyList() {
         title="Company"
         content="Deleting Compay will delete all the associated users as well!"
         data={toDelete}
+        loading={loading}
       />
       {selectedCompany && (
         <>
