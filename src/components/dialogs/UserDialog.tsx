@@ -84,6 +84,14 @@ export default function UserDialog({
   const selectedCountry = watch("country");
   const selectedState = watch("state");
   const selectedCompany = watch("company_name");
+  const firstName = watch("firstname");
+  const lastName = watch("lastname");
+
+  useEffect(() => {
+    if (firstName && lastName) {
+      methods.setValue("display_name", firstName + " " + lastName);
+    }
+  }, [firstName, lastName]);
 
   useEffect(() => {
     if (selectedCompany) {

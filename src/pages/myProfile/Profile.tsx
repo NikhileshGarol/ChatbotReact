@@ -92,6 +92,14 @@ const Profile: React.FC = () => {
 
   const selectedCountry = watch("country");
   const selectedState = watch("state");
+  const firstName = watch("firstname");
+  const lastName = watch("lastname");
+
+  useEffect(() => {
+    if (firstName && lastName) {
+      methods.setValue("display_name", firstName + " " + lastName);
+    }
+  }, [firstName, lastName]);
 
   useEffect(() => {
     if (selectedCountry) {
