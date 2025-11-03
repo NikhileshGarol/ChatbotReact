@@ -15,9 +15,9 @@ import {
 import UploadDialog from "../../components/training/UploadDialog";
 import { useAuth } from "../../contexts/AuthContext";
 import DeleteIcon from "@mui/icons-material/Delete";
-import LogsDialog from "../../components/training/LogsDialog";
-import PreviewDialog from "../../components/training/PreviewDialog";
-import type { TrainingJob } from "../../store/trainingMock";
+// import LogsDialog from "../../components/training/LogsDialog";
+// import PreviewDialog from "../../components/training/PreviewDialog";
+// import type { TrainingJob } from "../../store/trainingMock";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import {
   deleteDocument,
@@ -47,10 +47,10 @@ export default function UploadDocuments() {
   const { showSnackbar } = useSnackbar();
   const [openUpload, setOpenUpload] = useState(false);
   const [docs, setDocs] = useState<DocumentOut[]>([]);
-  const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
-  const [logsOpen, setLogsOpen] = useState(false);
-  const [previewDoc, setPreviewDoc] = useState<any>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  // const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
+  // const [logsOpen, setLogsOpen] = useState(false);
+  // const [previewDoc, setPreviewDoc] = useState<any>(null);
+  // const [previewOpen, setPreviewOpen] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
@@ -272,7 +272,7 @@ export default function UploadDocuments() {
   //   setPreviewOpen(true);
   // };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
@@ -504,11 +504,11 @@ export default function UploadDocuments() {
         onClose={() => setOpenUpload(false)}
         onUploaded={onUploaded}
       />
-      <LogsDialog
+      {/* <LogsDialog
         open={logsOpen}
         job={selectedJob ?? undefined}
         onClose={() => setLogsOpen(false)}
-      />
+      /> */}
       <DeleteDialog
         open={openDeleteDialog}
         title={`${deleteType === "document" ? "File" : "Website"}`}
@@ -517,12 +517,12 @@ export default function UploadDocuments() {
         onConfirm={confirmDelete}
         loading={loading}
       />
-      <PreviewDialog
+      {/* <PreviewDialog
         open={previewOpen}
         doc={previewDoc}
         onClose={() => setPreviewOpen(false)}
         isSuperadmin={isSuperAdmin}
-      />
+      /> */}
       <WebsiteUploadDialog
         open={websiteDialogOpen}
         onClose={() => setWebsiteDialogOpen(false)}

@@ -92,12 +92,17 @@ export default function CompanyDialog({
   const selectedState = watch("state");
 
   // State to store options
-  const [countryOptions, setCountryOptions] = useState(
-    Country.getAllCountries().map((c) => ({
-      label: c.name,
-      value: c.isoCode,
-    }))
-  ); // eslint-disable-line @typescript-eslint/no-unused-vars
+  // const [countryOptions, setCountryOptions] = useState(
+  //   Country.getAllCountries().map((c) => ({
+  //     label: c.name,
+  //     value: c.isoCode,
+  //   }))
+  // );
+  const countryOptions = Country.getAllCountries().map((c) => ({
+    label: c.name,
+    value: c.isoCode,
+  }));
+
   const [stateOptions, setStateOptions] = useState<
     { label: string; value: string }[]
   >([]);
@@ -266,8 +271,12 @@ export default function CompanyDialog({
           </DialogActions>
         </form>
       </FormProvider>
-      {isLoading && <LoadingOverlay content="Loading details.." loading={isLoading} />}
-      {loading && <LoadingOverlay content="Saving changes.." loading={loading} />}
+      {isLoading && (
+        <LoadingOverlay content="Loading details.." loading={isLoading} />
+      )}
+      {loading && (
+        <LoadingOverlay content="Saving changes.." loading={loading} />
+      )}
     </Dialog>
   );
 }

@@ -26,7 +26,7 @@ const FloatingChat: React.FC = () => {
   ]); // Chat history
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
   const [isListening, setIsListening] = useState<boolean>(false); // Voice recognition state
-  const [sessionId, setSessionId] = useState<string>(""); // Session ID
+  // const [sessionId, setSessionId] = useState<string>(""); // Session ID
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,7 +44,7 @@ const FloatingChat: React.FC = () => {
       storedSessionId = generateSessionId();
       sessionStorage.setItem("chatbot_session_id", storedSessionId);
     }
-    setSessionId(storedSessionId);
+    // setSessionId(storedSessionId);
   }, []);
 
   // Custom components for ReactMarkdown
@@ -152,19 +152,19 @@ const FloatingChat: React.FC = () => {
     };
   }, []);
 
-  const startListening = () => {
-    if (recognitionRef.current && !isListening) {
-      setIsListening(true);
-      recognitionRef.current.start();
-    }
-  };
+  // const startListening = () => {
+  //   if (recognitionRef.current && !isListening) {
+  //     setIsListening(true);
+  //     recognitionRef.current.start();
+  //   }
+  // };
 
-  const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  };
+  // const stopListening = () => {
+  //   if (recognitionRef.current && isListening) {
+  //     recognitionRef.current.stop();
+  //     setIsListening(false);
+  //   }
+  // };
 
   const handleSendMessage = async (message?: string) => {
     const query = message || userQuery;
@@ -211,7 +211,7 @@ const FloatingChat: React.FC = () => {
 
       // Add bot's response with metadata to chat history
       const botMessage = response.answer;
-      const metadata = response.answer;
+      // const metadata = response.answer;
 
       // Add visual indicators based on query type
       let messagePrefix = "";

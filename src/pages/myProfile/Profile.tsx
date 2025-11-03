@@ -61,12 +61,17 @@ const Profile: React.FC = () => {
     lastname: user.lastname,
   };
   // State to store options
-  const [countryOptions, setCountryOptions] = useState(
-    Country.getAllCountries().map((c) => ({
-      label: c.name,
-      value: c.isoCode,
-    }))
-  );
+  // const [countryOptions, setCountryOptions] = useState(
+  //   Country.getAllCountries().map((c) => ({
+  //     label: c.name,
+  //     value: c.isoCode,
+  //   }))
+  // );
+  const countryOptions = Country.getAllCountries().map((c) => ({
+    label: c.name,
+    value: c.isoCode,
+  }));
+
   const [stateOptions, setStateOptions] = useState<
     { label: string; value: string }[]
   >([]);

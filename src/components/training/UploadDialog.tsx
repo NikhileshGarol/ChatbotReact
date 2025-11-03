@@ -119,7 +119,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
   //   });
   // };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async () => {
     setError(null);
     if (!file) {
       setError("Please select a file to upload.");
