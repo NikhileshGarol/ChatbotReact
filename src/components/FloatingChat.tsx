@@ -25,7 +25,7 @@ const FloatingChat: React.FC = () => {
     },
   ]); // Chat history
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
-  const [isListening, setIsListening] = useState<boolean>(false); // Voice recognition state
+  // const [isListening, setIsListening] = useState<boolean>(false); // Voice recognition state
   // const [sessionId, setSessionId] = useState<string>(""); // Session ID
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -132,16 +132,16 @@ const FloatingChat: React.FC = () => {
         const transcript = event.results[0][0].transcript;
         handleSendMessage(transcript);
         //setUserQuery(transcript);
-        setIsListening(false);
+        // setIsListening(false);
       };
 
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
-        setIsListening(false);
+        // setIsListening(false);
       };
 
       recognitionRef.current.onend = () => {
-        setIsListening(false);
+        // setIsListening(false);
       };
     }
 
