@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import {
-  previvewDocSuperadmin,
-  previvewDocUser,
+  downloadDocSuperadmin,
+  downloadDocUser,
 } from "../../services/training.service";
 import formatDateLocal from "../../utils/formatDateLocal";
 
@@ -50,9 +50,9 @@ export default function PreviewDialog({
       try {
         let response;
         if (isSuperadmin) {
-          response = await previvewDocSuperadmin(doc.id);
+          response = await downloadDocSuperadmin(doc.id);
         } else {
-          response = await previvewDocUser(doc.id);
+          response = await downloadDocUser(doc.id);
         }
         const blob =
           response instanceof Blob ? response : await response.blob?.();
@@ -200,11 +200,18 @@ export default function PreviewDialog({
       {/* Footer */}
       <DialogActions>
         {fileUrl && (
-          <Button variant="contained" component="a" href={fileUrl} download={doc.filename}>
+          <Button
+            variant="contained"
+            component="a"
+            href={fileUrl}
+            download={doc.filename}
+          >
             Download
           </Button>
         )}
-        <Button variant="outlined" onClick={onClose}>Close</Button>
+        <Button variant="outlined" onClick={onClose}>
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

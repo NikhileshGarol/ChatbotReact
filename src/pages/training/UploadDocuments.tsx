@@ -28,8 +28,8 @@ import {
   listDocumentsSuperadmin,
   listWebsite,
   listWebsitesSuperadmin,
-  previvewDocSuperadmin,
-  previvewDocUser,
+  downloadDocSuperadmin,
+  downloadDocUser,
   uploadWebsite,
 } from "../../services/training.service";
 import type { DocumentOut, FilterOption } from "../../services/types";
@@ -172,12 +172,16 @@ export default function UploadDocuments() {
     };
     try {
       await uploadWebsite(payload);
-      showSnackbar("success", "Website uploaded successfully");
+      showSnackbar("success", "Website scraped successfully");
       setIsLoading(false);
       setWebsiteDialogOpen(false);
-      fetchWebsites();
+      if (isSuperAdmin) {
+        listSuperadminWeb();
+      } else {
+        fetchWebsites();
+      }
     } catch (e: any) {
-      const message = e?.response.data.detail || "something went wrong";
+      const message = e?.response.data.detail || "Something went wrong";
       showSnackbar("error", message);
       console.log(e);
     } finally {
@@ -187,7 +191,11 @@ export default function UploadDocuments() {
 
   const onUploaded = () => {
     setTabIndex(0);
-    listAllUserDocs();
+    if (isSuperAdmin) {
+      listAllSuperadminDocs();
+    } else {
+      listAllUserDocs();
+    }
   };
 
   const handleDelete = (id: number, type: "document" | "website") => {
@@ -210,10 +218,17 @@ export default function UploadDocuments() {
       setOpenDeleteDialog(false);
       setSelectedRow(null);
       setDeleteType("");
-      fetchWebsites();
+      showSnackbar("success", resp.message || "");
+      if (isSuperAdmin) {
+        listSuperadminWeb();
+      } else {
+        fetchWebsites();
+      }
       console.log(resp);
-    } catch (error) {
+    } catch (error: any) {
+      const message = error.response.data.detail || "Something went wrong";
       console.error(error);
+      showSnackbar("error", message);
     }
   };
 
@@ -223,10 +238,16 @@ export default function UploadDocuments() {
       setOpenDeleteDialog(false);
       setSelectedRow(null);
       setDeleteType("");
-      listAllUserDocs();
-      console.log(resp);
-    } catch (error) {
+      showSnackbar("success", resp.message || "Document deleted successfully");
+      if (isSuperAdmin) {
+        listAllSuperadminDocs();
+      } else {
+        listAllUserDocs();
+      }
+    } catch (error: any) {
+      const message = error.response.data.detail || "Something went wrong";
       console.error(error);
+      showSnackbar("error", message);
     }
   };
 
@@ -255,9 +276,9 @@ export default function UploadDocuments() {
     try {
       let response;
       if (isSuperAdmin) {
-        response = await previvewDocSuperadmin(row.id);
+        response = await downloadDocSuperadmin(row.id);
       } else {
-        response = await previvewDocUser(row.id);
+        response = await downloadDocUser(row.id);
       }
       // Create blob from response
       const blob =
@@ -274,7 +295,7 @@ export default function UploadDocuments() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("File download failed:", error);
-      showSnackbar("error", "File download failed");
+      showSnackbar("error", "Document file not found on server");
     }
   };
 
@@ -307,12 +328,12 @@ export default function UploadDocuments() {
       field: "actions",
       headerName: "Actions",
       sortable: false,
-      width: 140,
+      width: 100,
       renderCell: (params) => {
         const row = params.row;
         return (
           <Box sx={{ display: "flex", mt: "5px" }}>
-            <IconButton
+            {/* <IconButton
               color="primary"
               size="small"
               onClick={() => handlePreview(row)}
@@ -324,7 +345,7 @@ export default function UploadDocuments() {
               orientation="vertical"
               flexItem
               sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
-            />
+            /> */}
             <IconButton
               color="primary"
               size="small"
@@ -486,8 +507,8 @@ export default function UploadDocuments() {
       />
       <DeleteDialog
         open={openDeleteDialog}
-        title="Delete File"
-        content="Are you sure you want to delete this file?"
+        title={`${deleteType === 'document' ? "File" : "Website"}`}
+        content={`Are you sure you want to delete this ${deleteType}?`}
         onClose={() => setOpenDeleteDialog(false)}
         onConfirm={confirmDelete}
       />

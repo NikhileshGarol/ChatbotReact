@@ -63,16 +63,16 @@ export async function deleteWebsite(id: number) {
   return resp.data;
 }
 
-export async function previvewDocSuperadmin(id: number) {
-  const resp = await api.get(`/documents/superadmin/${id}/preview`, {
+export async function downloadDocSuperadmin(id: number) {
+  const resp = await api.get(`/documents/superadmin/${id}/download`, {
     responseType: "blob",
   });
   return resp.data;
 }
 
-export async function previvewDocUser(id: number) {
-  const resp = await api.get(`/documents/${id}/preview`, {
-    responseType: "blob", 
+export async function downloadDocUser(id: number) {
+  const resp = await api.get(`/documents/${id}/download`, {
+    responseType: "blob",
   });
   return resp.data;
 }

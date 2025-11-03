@@ -136,7 +136,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       await uploadDocument(file);
       if (onUploaded) onUploaded();
       showSnackbar("success", "Document uploaded successfully");
-      handleClose();
+      setTimeout(handleClose, 100);
     } catch (e: any) {
       const message = e?.response?.data?.detail || "Something went wrong";
       showSnackbar("error", message);
