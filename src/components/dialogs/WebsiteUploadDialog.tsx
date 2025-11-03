@@ -10,7 +10,6 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import UploadIcon from "@mui/icons-material/Upload";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { GridCloseIcon } from "@mui/x-data-grid";

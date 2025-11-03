@@ -4,7 +4,6 @@ import type {
   CompanyAdminCreatePayload,
   CompanyCreatePayload,
   CompanyOut,
-  UserOutWithApiKey,
 } from "./types";
 
 export async function createCompany(payload: CompanyCreatePayload) {

@@ -24,12 +24,12 @@ export default function AdminLayout({
   const [open, setOpen] = React.useState(true);
   const { user } = useAuth();
 
-  const roleLabel =
-    user?.role === "superadmin"
-      ? "Super Admin"
-      : user?.role === "admin"
-      ? "Company Admin"
-      : "User";
+  // const roleLabel =
+  //   user?.role === "superadmin"
+  //     ? "Super Admin"
+  //     : user?.role === "admin"
+  //     ? "Company Admin"
+  //     : "User";
 
   // Auto collapse drawer on md or smaller screens
   const drawerOpen = isMdDown ? false : open;

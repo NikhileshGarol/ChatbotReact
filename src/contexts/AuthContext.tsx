@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { login } from "../services/auth.service";
 import { getCurrentUser, getUserImage } from "../services/user.service";
 import { useSnackbar } from "./SnackbarContext";
-import { useLocation, useNavigate } from "react-router-dom";
 
 type AuthContextType = {
   user: any | null;

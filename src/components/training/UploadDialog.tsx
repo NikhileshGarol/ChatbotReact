@@ -1,5 +1,5 @@
 // src/components/training/UploadDialog.tsx
-import React, { useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,8 +9,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Backdrop,
-  CircularProgress,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import { uploadFormSchema } from "../../validation/trainingSchema";
@@ -75,10 +73,10 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       ".log",
     ];
 
-    function isAllowedFile(fileName: string): boolean {
-      const lowerFileName = fileName.toLowerCase();
-      return allowedExt.some((ext) => lowerFileName.endsWith(ext));
-    }
+    // function isAllowedFile(fileName: string): boolean {
+    //   const lowerFileName = fileName.toLowerCase();
+    //   return allowedExt.some((ext) => lowerFileName.endsWith(ext));
+    // }
     const name = f.name.toLowerCase();
     const isAllowed = allowedExt.some((ext) => name.endsWith(ext));
     if (!isAllowed) {
@@ -92,34 +90,34 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
     setFile(f);
   };
 
-  const readFileAsBase64 = (
-    f: File
-  ): Promise<{ base64: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // result is like "data:<mime>;base64,...."
-        if (result.indexOf(",") >= 0) {
-          const parts = result.split(",");
-          const meta = parts[0]; // data:<mime>;base64
-          const mimeMatch = meta.match(/data:([^;]+);/);
-          const mimeType = mimeMatch
-            ? mimeMatch[1]
-            : f.type || "application/octet-stream";
-          resolve({ base64: parts[1], mimeType });
-        } else {
-          // fallback - treat entire string as base64
-          resolve({
-            base64: result,
-            mimeType: f.type || "application/octet-stream",
-          });
-        }
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(f);
-    });
-  };
+  // const readFileAsBase64 = (
+  //   f: File
+  // ): Promise<{ base64: string; mimeType: string }> => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       const result = reader.result as string;
+  //       // result is like "data:<mime>;base64,...."
+  //       if (result.indexOf(",") >= 0) {
+  //         const parts = result.split(",");
+  //         const meta = parts[0]; // data:<mime>;base64
+  //         const mimeMatch = meta.match(/data:([^;]+);/);
+  //         const mimeType = mimeMatch
+  //           ? mimeMatch[1]
+  //           : f.type || "application/octet-stream";
+  //         resolve({ base64: parts[1], mimeType });
+  //       } else {
+  //         // fallback - treat entire string as base64
+  //         resolve({
+  //           base64: result,
+  //           mimeType: f.type || "application/octet-stream",
+  //         });
+  //       }
+  //     };
+  //     reader.onerror = (err) => reject(err);
+  //     reader.readAsDataURL(f);
+  //   });
+  // };
 
   const onSubmit = async (data: any) => {
     setError(null);

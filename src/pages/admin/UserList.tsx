@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { Typography, Box, Button, IconButton, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -79,7 +79,7 @@ export default function UserList() {
     };
     try {
       setLoading(true);
-      const response = await createUser(payload);
+      await createUser(payload);
       // setRows(response);
       showSnackbar("success", "User created successfully");
       setOpenDialog(false);

@@ -97,7 +97,7 @@ export default function CompanyDialog({
       label: c.name,
       value: c.isoCode,
     }))
-  );
+  ); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [stateOptions, setStateOptions] = useState<
     { label: string; value: string }[]
   >([]);

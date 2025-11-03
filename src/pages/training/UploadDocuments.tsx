@@ -8,7 +8,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Tabs,
   Tab,
   Divider,
@@ -18,8 +17,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LogsDialog from "../../components/training/LogsDialog";
 import PreviewDialog from "../../components/training/PreviewDialog";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import type { TrainingJob, TrainingDocument } from "../../store/trainingMock";
+import type { TrainingJob } from "../../store/trainingMock";
 import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import {
   deleteDocument,
@@ -269,10 +267,10 @@ export default function UploadDocuments() {
   //   setLogsOpen(true);
   // };
 
-  const handlePreview = (doc: any) => {
-    setPreviewDoc(doc);
-    setPreviewOpen(true);
-  };
+  // const handlePreview = (doc: any) => {
+  //   setPreviewDoc(doc);
+  //   setPreviewOpen(true);
+  // };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

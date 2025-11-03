@@ -74,7 +74,7 @@ export default function CompanyList() {
     const tenantCode = data.tenant_code;
     try {
       setLoading(true);
-      const response = await updateCompanyDetails(tenantCode, data);
+      await updateCompanyDetails(tenantCode, data);
       refresh();
       setOpenDialog(false);
       showSnackbar("success", "Company details updated successfully");
