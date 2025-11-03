@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 type Props = {
@@ -8,6 +8,24 @@ type Props = {
 };
 
 export default function CustomTable({ gridRows, columns, isLoading }: Props) {
+  const CustomNoRowsOverlay = () => (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+        flexDirection: "column",
+        color: "text.secondary",
+        fontSize: "16px",
+      }}
+    >
+      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+        No records found
+      </Typography>
+    </Box>
+  );
+
   const adjustedColumns = columns.map((col) => {
     // ✅ If explicit width is provided → fixed column
     if (col.width) {
@@ -54,6 +72,9 @@ export default function CustomTable({ gridRows, columns, isLoading }: Props) {
         loading={isLoading}
         initialState={{
           pagination: { paginationModel: { pageSize: 10, page: 0 } },
+        }}
+        slots={{
+          noRowsOverlay: CustomNoRowsOverlay, // Custom message for empty data
         }}
         autoHeight
         scrollbarSize={0}

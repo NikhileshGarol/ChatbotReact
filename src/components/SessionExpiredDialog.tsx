@@ -21,14 +21,14 @@ const SessionExpiredDialog: React.FC = () => {
   return (
     <Dialog open={sessionExpired}>
       <DialogTitle>
-         <Typography variant="h6">
+         <Typography textAlign={'center'} variant="h6">
         Session Expired!
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Typography>Your session has expired. Please log in again.</Typography>
+        <Typography variant="body1" textAlign={'center'}>Your session has expired. Please log in again.</Typography>
       </DialogContent>
-      <DialogActions sx={{ display: "flex", justifyContent: "center" }}>
+      <DialogActions sx={{ display: "flex", justifyContent: "center", p:2 }}>
         <Button
           variant="contained"
           color="primary"
