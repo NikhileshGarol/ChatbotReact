@@ -11,6 +11,9 @@ import Header from "../components/Header";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
 import FloatingChat from "../components/FloatingChat";
+import Logo from "../assets/Stixis-logo-golden.png";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 const drawerWidth = 200;
 const collapsedWidth = 72;
@@ -42,20 +45,40 @@ export default function AdminLayout({
       <AppBar
         position="fixed"
         color="primary"
-        sx={{ zIndex: (t) => t.zIndex.drawer + 1 }}
+        sx={{
+          zIndex: (t) => t.zIndex.drawer + 1,
+          background: "linear-gradient(90deg, #124d5eff 0%, #0b76ef 100%)",
+        }}
       >
         <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            AI Assistant
-          </Typography>
+          <Box sx={{ width: "170px" }}>
+            <img src={Logo} alt="Logo" id="logo"></img>
+          </Box>
+          {!open && <ChevronLeftIcon />}
           <IconButton
             color="inherit"
             edge="start"
-            sx={{ ml: 2 }}
+            sx={{ml: open ? 2 : -1}}
             onClick={() => setOpen((s) => !s)}
           >
             <MenuIcon />
+            {open && <ChevronRightIcon />}
           </IconButton>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              sx={{ textTransform: "uppercase", fontWeight: 700 }}
+              variant="h6"
+            >
+              AI Asstistant Solutions
+            </Typography>
+          </Box>
           <Header />
         </Toolbar>
       </AppBar>

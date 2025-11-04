@@ -77,6 +77,7 @@ export default function CustomTable({ gridRows, columns, isLoading }: Props) {
           noRowsOverlay: CustomNoRowsOverlay, // Custom message for empty data
         }}
         autoHeight
+        rowHeight={42}
         scrollbarSize={0}
         sx={{
           flex: 1,

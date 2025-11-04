@@ -19,9 +19,9 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter basename={baseURL}>
       <SessionProvider>
         {/* <SessionListener /> */}
-        <SessionExpiredDialog />
         <SnackbarProvider>
           <AuthProvider>
+            <SessionExpiredDialog />
             <ThemeProvider theme={theme}>
               <CssBaseline />
               <App />

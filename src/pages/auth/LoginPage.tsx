@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import RHFPasswordField from "../../components/RHF/RHFPasswordField";
+import Logo from "../../assets/Stixis-logo-golden.png";
 
 const schema = yup
   .object({
@@ -66,7 +67,7 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #343537ff 0%, #4f7abfff 100%)",
+        background: "linear-gradient(135deg, #124d5eff 0%, #4f7abfff 100%)",
         position: "relative",
         p: 2,
       }}
@@ -87,7 +88,7 @@ export default function LoginPage() {
           <Grid
             size={{ xs: 12, sm: 5 }}
             sx={{
-              background: "linear-gradient(135deg, #e0e7ff 0%, #fff 70%)",
+              background: "linear-gradient(135deg, #aed5f4ff 0%, #fff 70%)",
               display: { xs: "none", sm: "flex" },
               alignItems: "center",
               justifyContent: "center",
@@ -97,13 +98,15 @@ export default function LoginPage() {
           >
             <Box
               sx={{
-                height: 120,
-                width: 120,
-                background:
-                  "url('https://cdn-icons-png.flaticon.com/512/4712/4712107.png') center/contain no-repeat",
+                // height: '100%',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                // background:
+                //   "url('https://cdn-icons-png.flaticon.com/512/4712/4712107.png') center/contain no-repeat",
                 mx: "auto",
               }}
-            />
+            ><img src={Logo} alt="Logo" id="logo"></img></Box>
           </Grid>
           {/* Login Form on right */}
           <Grid
@@ -116,7 +119,7 @@ export default function LoginPage() {
             }}
           >
             <Typography
-              variant="h4"
+              variant="h6"
               component="h1"
               textAlign="center"
               gutterBottom
@@ -124,7 +127,7 @@ export default function LoginPage() {
               color="text.primary"
               sx={{ mb: 2 }}
             >
-              Welcome
+              Welcome to AI Assistant Solutions
             </Typography>
 
             <Typography

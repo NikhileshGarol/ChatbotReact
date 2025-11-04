@@ -8,16 +8,15 @@ import {
   Typography,
 } from "@mui/material";
 import { useSession } from "../contexts/SessionContext";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const SessionExpiredDialog: React.FC = () => {
   const { sessionExpired, setSessionExpired } = useSession();
-  const navigate = useNavigate();
+  const { Logout } = useAuth();
 
   const handleLoginRedirect = () => {
     setSessionExpired(false);
-    localStorage.removeItem("AUTH_STORAGE_V1");
-    navigate("/auth/login", { replace: true });
+    Logout();
   };
 
   return (

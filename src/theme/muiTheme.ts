@@ -2,7 +2,7 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#0b76ef" },
+    primary: { main: "#4191ecff" },
     secondary: { main: "#0b9d74" },
     background: { default: "#f4f6f8" },
     error: { main: "#D32F2F" },
@@ -47,11 +47,11 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&.Mui-selected": {
-            backgroundColor: "#1976d2",
+            backgroundColor: "#124d5eff",
             color: "#fff",
           },
           "&.Mui-selected:hover": {
-            backgroundColor: "#115293",
+            backgroundColor: "#487199ff",
           },
         },
       },

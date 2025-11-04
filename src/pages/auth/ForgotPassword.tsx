@@ -84,7 +84,7 @@ export default function ForgotPassword() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #343537ff 0%, #4f7abfff 100%)",
+        background: "linear-gradient(135deg, #124d5eff 0%, #4f7abfff 100%)",
         position: "relative",
         p: 2,
       }}

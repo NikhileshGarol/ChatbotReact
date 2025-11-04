@@ -10,7 +10,6 @@ export const api = axios.create({
 });
 
 function showSessionExpiredPopup() {
-  localStorage.removeItem("AUTH_STORAGE_V1");
   window.dispatchEvent(new Event("session-expired"));
 }
 
