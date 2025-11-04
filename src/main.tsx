@@ -12,9 +12,11 @@ import { SnackbarProvider } from "./contexts/SnackbarContext";
 import { SessionProvider } from "./contexts/SessionContext";
 import SessionExpiredDialog from "./components/SessionExpiredDialog";
 
+const baseURL = import.meta.env.VITE_APP_BASE_NAME;
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={baseURL}>
       <SessionProvider>
         {/* <SessionListener /> */}
         <SessionExpiredDialog />
