@@ -138,7 +138,14 @@ export default function LoginPage() {
 
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <RHFTextField name="email" label="Email" type="email" />
+                <Box sx={{mb:2}}>
+                <RHFTextField
+                  placeholder="Enter email"
+                  name="email"
+                  label="Email"
+                  type="email"
+                />
+                </Box>
                 <RHFPasswordField
                   name="password"
                   label="Password"

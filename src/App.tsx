@@ -1,12 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import routes from "./routes";
-import FloatingChat from "./components/FloatingChat";
-import { useAuth } from "./contexts/AuthContext";
 import { useTokenRefreshWithInactivity } from "./hooks/useTokenRefreshWithInactivity";
 
 export default function App() {
-  const { isAuthenticated } = useAuth();
   useTokenRefreshWithInactivity();
+
   return (
     <>
       <Routes>
@@ -19,7 +17,6 @@ export default function App() {
           element={<div style={{ padding: 32 }}>404 — Not Found</div>}
         /> */}
       </Routes>
-      {isAuthenticated && <FloatingChat />}
     </>
   );
 }

@@ -10,6 +10,7 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
+import FloatingChat from "../components/FloatingChat";
 
 const drawerWidth = 200;
 const collapsedWidth = 72;
@@ -19,10 +20,11 @@ export default function AdminLayout({
 }: {
   children?: React.ReactNode;
 }) {
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === "superadmin";
   const theme = useTheme();
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = React.useState(true);
-  const { user } = useAuth();
 
   // const roleLabel =
   //   user?.role === "superadmin"
@@ -76,6 +78,7 @@ export default function AdminLayout({
       >
         <Toolbar />
         {children}
+        {isAuthenticated && !isAdmin && <FloatingChat />}
       </Box>
     </Box>
   );

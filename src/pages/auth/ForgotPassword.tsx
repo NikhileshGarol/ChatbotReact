@@ -117,7 +117,11 @@ export default function ForgotPassword() {
         {step === "request" && (
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmitRequest)} noValidate>
-              <RHFTextField name="email" label="Email" />
+              <RHFTextField
+                placeholder="Enter email"
+                name="email"
+                label="Email"
+              />
               <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
                 <Button type="submit" variant="contained">
                   Send reset link
@@ -133,12 +137,12 @@ export default function ForgotPassword() {
               onSubmit={methodsNewPass.handleSubmit(onSubmitReset)}
               noValidate
             >
-              <Box sx={{mb:2}}>
-              <RHFPasswordField
-                name="password"
-                label="New Password"
-                placeholder="New Password"
-              />
+              <Box sx={{ mb: 2 }}>
+                <RHFPasswordField
+                  name="password"
+                  label="New Password"
+                  placeholder="New Password"
+                />
               </Box>
               <RHFPasswordField
                 name="confirm_password"
