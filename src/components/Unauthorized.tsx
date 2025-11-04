@@ -5,12 +5,17 @@ export default function Unauthorized() {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ p: 6, textAlign: 'center' }}>
-      <Typography variant="h4" gutterBottom>403 — Unauthorized</Typography>
+    <Box sx={{ p: 6, textAlign: "center" }}>
+      <Typography variant="h4" gutterBottom>
+        403 — Unauthorized
+      </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
         You do not have permission to view this page or the page does not exist.
       </Typography>
-      <Button variant="contained" onClick={() => navigate(-1)}>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/auth/login", { replace: true })}
+      >
         Go Back
       </Button>
     </Box>

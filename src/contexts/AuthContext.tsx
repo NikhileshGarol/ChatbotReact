@@ -16,6 +16,7 @@ type AuthContextType = {
   setUser: React.Dispatch<React.SetStateAction<any>>;
   profileImage: string | null;
   refreshProfileImage: () => Promise<void>;
+  loading: boolean
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [token, setToken] = useState<any | null>(null);
   const [refreshToken, setRefreshToken] = useState<any | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const STORAGE_KEY = "AUTH_STORAGE_V1";
 
@@ -38,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(token);
       setRefreshToken(refreshToken);
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -107,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser,
         profileImage,
         refreshProfileImage: getProfileImage,
+        loading
       }}
     >
       {children}
