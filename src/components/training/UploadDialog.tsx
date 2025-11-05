@@ -9,12 +9,17 @@ import {
   Box,
   Typography,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
 } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import { uploadFormSchema } from "../../validation/trainingSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "../../contexts/AuthContext";
 import { GridCloseIcon } from "@mui/x-data-grid";
+import { DeleteOutline } from "@mui/icons-material";
 import { uploadDocument } from "../../services/training.service";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingOverlay from "../LoadingOverlay";
@@ -30,113 +35,77 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
   const { handleSubmit } = methods;
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const [file, setFile] = React.useState<File | null>(null);
+
+  const [files, setFiles] = React.useState<File[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [reading, setReading] = React.useState(false);
 
+  const allowedExt = [
+    ".pdf",
+    ".docx",
+    ".doc",
+    ".xlsx",
+    ".xls",
+    ".pptx",
+    ".ppt",
+    ".txt",
+    ".csv",
+    ".md",
+    ".rst",
+    ".log",
+  ];
+
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    const f = e.target.files?.[0] ?? null;
-    if (!f) {
-      setFile(null);
-      return;
-    }
-    const allowedExt = [
-      // ".jpg",
-      // ".jpeg",
-      // ".png",
-      // ".gif",
-      // ".bmp",
-      // ".svg",
-      // ".webp", // images
-      // ".pdf", // pdf
-      // ".doc",
-      // ".docx", // word documents
-      // ".xls",
-      // ".xlsx", // excel spreadsheets
-      // ".ppt",
-      // ".pptx", // presentations (optional)
-      // ".txt",
-      // ".rtf", // text files
-      // ".csv", // comma-separated values
-      ".pdf",
-      ".docx",
-      ".doc",
-      ".xlsx",
-      ".xls",
-      ".pptx",
-      ".ppt",
-      ".txt",
-      ".csv",
-      ".md",
-      ".rst",
-      ".log",
-    ];
+    const selected = Array.from(e.target.files ?? []);
+    if (!selected.length) return;
 
-    // function isAllowedFile(fileName: string): boolean {
-    //   const lowerFileName = fileName.toLowerCase();
-    //   return allowedExt.some((ext) => lowerFileName.endsWith(ext));
-    // }
-    const name = f.name.toLowerCase();
-    const isAllowed = allowedExt.some((ext) => name.endsWith(ext));
-    if (!isAllowed) {
-      setError("Unsupported file type.");
+    const totalFiles = files.length + selected.length;
+    if (totalFiles > 5) {
+      setError("You can upload a maximum of 5 files at a time.");
       return;
     }
-    if (f.size > 5 * 1024 * 1024) {
-      setError("File too large. Max 5MB allowed.");
+
+    const invalidFiles = selected.filter((f) => {
+      const ext = f.name.toLowerCase();
+      const isAllowed = allowedExt.some((a) => ext.endsWith(a));
+      return !isAllowed || f.size > 5 * 1024 * 1024;
+    });
+
+    if (invalidFiles.length > 0) {
+      setError(`Some files are invalid. Allowed types: ${allowedExt} and size up to 5MB each.`);
       return;
     }
-    setFile(f);
+
+    setFiles((prev) => [...prev, ...selected]);
+    e.target.value = ""; // reset input to allow reselecting same files if needed
   };
 
-  // const readFileAsBase64 = (
-  //   f: File
-  // ): Promise<{ base64: string; mimeType: string }> => {
-  //   return new Promise((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       const result = reader.result as string;
-  //       // result is like "data:<mime>;base64,...."
-  //       if (result.indexOf(",") >= 0) {
-  //         const parts = result.split(",");
-  //         const meta = parts[0]; // data:<mime>;base64
-  //         const mimeMatch = meta.match(/data:([^;]+);/);
-  //         const mimeType = mimeMatch
-  //           ? mimeMatch[1]
-  //           : f.type || "application/octet-stream";
-  //         resolve({ base64: parts[1], mimeType });
-  //       } else {
-  //         // fallback - treat entire string as base64
-  //         resolve({
-  //           base64: result,
-  //           mimeType: f.type || "application/octet-stream",
-  //         });
-  //       }
-  //     };
-  //     reader.onerror = (err) => reject(err);
-  //     reader.readAsDataURL(f);
-  //   });
-  // };
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const onSubmit = async () => {
     setError(null);
-    if (!file) {
-      setError("Please select a file to upload.");
+
+    if (!files.length) {
+      setError("Please select files to upload.");
       return;
     }
+
     if (!user) {
       setError("User not authenticated.");
       return;
     }
+
     try {
       setReading(true);
-      await uploadDocument(file);
+      await uploadDocument(files);
       if (onUploaded) onUploaded();
-      showSnackbar("success", "Document uploaded successfully");
+      showSnackbar("success", "All documents uploaded successfully");
       setTimeout(handleClose, 100);
     } catch (e: any) {
-      const message = e?.response?.data?.detail || "Something went wrong";
+      const message = e?.response?.data?.detail || "Upload failed. Try again.";
       showSnackbar("error", message);
     } finally {
       setReading(false);
@@ -144,13 +113,13 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
   };
 
   const handleClose = () => {
-    setFile(null);
+    setFiles([]);
     setError(null);
     onClose();
   };
 
   return (
-    <Dialog open={open} maxWidth="sm">
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <DialogTitle
         sx={{
           display: "flex",
@@ -161,53 +130,84 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
           color: "background.default",
         }}
       >
-        Upload Document
-        <IconButton sx={{ color: "background.default" }}>
-          <GridCloseIcon onClick={handleClose} />
+        Upload Documents
+        <IconButton sx={{ color: "background.default" }} onClick={handleClose}>
+          <GridCloseIcon />
         </IconButton>
       </DialogTitle>
+
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Box sx={{ mb: 2 }}>
               <Button variant="outlined" component="label" disabled={reading}>
-                Select file
-                <input hidden type="file" onChange={onFileSelect} />
+                Select files
+                <input
+                  hidden
+                  type="file"
+                  multiple
+                  onChange={onFileSelect}
+                  accept={allowedExt.join(",")}
+                />
               </Button>
-              <Box sx={{ mt: 1 }}>
-                {file ? (
-                  <Typography variant="body2">
-                    {file.name} · {(file.size / 1024).toFixed(1)} KB
-                  </Typography>
+
+              <Box sx={{ mt: 2 }}>
+                {files.length > 0 ? (
+                  <List dense>
+                    {files.map((file, idx) => (
+                      <ListItem
+                        key={idx}
+                        sx={{
+                          py: 0,
+                          border: "1px solid #e0e0e0",
+                          borderRadius: 1,
+                          mb: 1,
+                        }}
+                      >
+                        <ListItemText
+                          primary={file.name}
+                          secondary={`${(file.size / 1024).toFixed(1)} KB`}
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={() => removeFile(idx)}
+                            disabled={reading}
+                          >
+                            <DeleteOutline />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))}
+                  </List>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
-                    No file selected
+                    No files selected
                   </Typography>
                 )}
+
                 {error && (
-                  <Typography variant="caption" color="error" display="block">
+                  <Typography variant="caption" color="error" display="block" mt={1}>
                     {error}
                   </Typography>
                 )}
               </Box>
             </Box>
-
-            {/* <RHFTextField name="title" label="Title (optional)" />
-            <RHFTextField name="description" label="Description (optional)" /> */}
           </DialogContent>
 
           <DialogActions>
             <Button variant="outlined" onClick={handleClose} disabled={reading}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={reading}>
+            <Button type="submit" variant="contained" disabled={reading || !files.length}>
               {reading ? "Uploading..." : "Upload"}
             </Button>
           </DialogActions>
         </form>
       </FormProvider>
-      {/* Loading Overlay */}
-      <LoadingOverlay loading={reading} content="File Upload inprogress..." />
+
+      <LoadingOverlay loading={reading} content="File Upload in progress..." />
     </Dialog>
   );
 }

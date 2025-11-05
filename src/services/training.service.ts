@@ -8,10 +8,12 @@ import type {
   WebsiteRequest,
 } from "./types";
 
-export async function uploadDocument(file: File) {
-  const form = new FormData();
-  form.append("file", file);
-  const resp = await api.post<any>("/documents/upload", form, {
+export async function uploadDocument(files: File[]) {
+  const formData = new FormData();
+    files.forEach((file) => {
+    formData.append("files", file); // 'files' key should match backend expectation
+  });
+  const resp = await api.post<any>("/documents/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return resp.data as UploadResponse;

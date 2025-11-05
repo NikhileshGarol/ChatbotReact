@@ -36,7 +36,7 @@ export function WebsiteUploadDialog({
     if (value.trim() === "" || isValidUrl(value)) {
       newErrors[index] = null; // clear error
     } else {
-      newErrors[index] = "Invalid URL";
+      newErrors[index] = 'Please enter a valid URL, e.g.https://www.example.com.';
     }
     setError(newErrors);
     const newUrls = [...urls];

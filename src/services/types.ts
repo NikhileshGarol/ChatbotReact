@@ -95,7 +95,7 @@ export type QueryAnswer = {
 };
 
 export type WebsiteRequest = {
-  url: string;
+  urls: string[];
 };
 
 export type RequestResetPassword = {

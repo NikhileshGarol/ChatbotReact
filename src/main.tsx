@@ -17,18 +17,18 @@ const baseURL = import.meta.env.VITE_APP_BASE_NAME;
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter basename={baseURL}>
-      <SessionProvider>
-        {/* <SessionListener /> */}
-        <SnackbarProvider>
-          <AuthProvider>
-            <SessionExpiredDialog />
-            <ThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
+        <SessionProvider>
+          {/* <SessionListener /> */}
+          <SnackbarProvider>
+            <AuthProvider>
+              <SessionExpiredDialog />
               <CssBaseline />
               <App />
-            </ThemeProvider>
-          </AuthProvider>
-        </SnackbarProvider>
-      </SessionProvider>
+            </AuthProvider>
+          </SnackbarProvider>
+        </SessionProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

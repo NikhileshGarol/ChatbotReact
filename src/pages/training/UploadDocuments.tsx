@@ -33,12 +33,14 @@ import {
 import type { DocumentOut, FilterOption } from "../../services/types";
 import CustomTable from "../../components/CustomTable";
 import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { listCompanies } from "../../services/company.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
 import formatDateLocal from "../../utils/formatDateLocal";
+import StatusCell from "../../components/StatusCell";
 
 export default function UploadDocuments() {
   const { user } = useAuth();
@@ -166,7 +168,7 @@ export default function UploadDocuments() {
     console.log(websiteUrl);
     setIsLoading(true);
     const payload = {
-      url: websiteUrl[0],
+      urls: websiteUrl,
     };
     try {
       await uploadWebsite(payload);
@@ -272,6 +274,22 @@ export default function UploadDocuments() {
   //   setPreviewOpen(true);
   // };
 
+  const refreshList = () => {
+    if (isSuperAdmin) {
+      if (tabIndex === 0) {
+        listAllSuperadminDocs();
+      } else if (tabIndex === 1) {
+        listSuperadminWeb();
+      }
+    } else {
+      if (tabIndex === 0) {
+        listAllUserDocs();
+      } else {
+        fetchWebsites();
+      }
+    }
+  };
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
@@ -326,6 +344,15 @@ export default function UploadDocuments() {
         const localFormatted = formatDateLocal(date);
 
         return <span>{localFormatted}</span>;
+      },
+    },
+    {
+      field: "status",
+      headerName: "Upload Status",
+      renderCell: (params) => {
+        const row = params.row.status;
+        const errorMsg = params.row.error_message;
+        return <StatusCell status={row} errorReason={errorMsg} />;
       },
     },
     {
@@ -390,6 +417,15 @@ export default function UploadDocuments() {
         const localFormatted = formatDateLocal(date);
 
         return <span>{localFormatted}</span>;
+      },
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      renderCell: (params) => {
+        const row = params.row.status;
+        const errorMsg = params.row.error_message;
+        return <StatusCell status={row} errorReason={errorMsg} />;
       },
     },
     {
@@ -481,6 +517,14 @@ export default function UploadDocuments() {
         >
           <Tab label="Uploaded Documents" />
           <Tab label="Scraped Websites" />
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => refreshList()}
+            title="Refresh List"
+          >
+            <RefreshIcon />
+          </IconButton>
         </Tabs>
         <Box sx={{ mt: 2 }}>
           {tabIndex === 0 && (
