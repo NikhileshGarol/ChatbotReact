@@ -258,7 +258,7 @@ export default function CompanyDialog({
           </DialogContent>
 
           <DialogActions sx={{ boxShadow: 2 }}>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button variant="outlined" onClick={onClose}>Cancel</Button>
             <Button type="submit" variant="contained">
               {loading ? (
                 <CircularProgress size={24} sx={{ color: "white" }} />

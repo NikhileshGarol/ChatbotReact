@@ -98,15 +98,14 @@ export default function LoginPage() {
           >
             <Box
               sx={{
-                // height: '100%',
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                // background:
-                //   "url('https://cdn-icons-png.flaticon.com/512/4712/4712107.png') center/contain no-repeat",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
                 mx: "auto",
               }}
-            ><img src={Logo} alt="Logo" id="logo"></img></Box>
+            >
+              <img src={Logo} alt="Logo" id="logo"></img>
+            </Box>
           </Grid>
           {/* Login Form on right */}
           <Grid
@@ -141,13 +140,13 @@ export default function LoginPage() {
 
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <Box sx={{mb:2}}>
-                <RHFTextField
-                  placeholder="Enter email"
-                  name="email"
-                  label="Email"
-                  type="email"
-                />
+                <Box sx={{ mb: 2 }}>
+                  <RHFTextField
+                    placeholder="Enter email"
+                    name="email"
+                    label="Email"
+                    type="email"
+                  />
                 </Box>
                 <RHFPasswordField
                   name="password"
@@ -163,12 +162,13 @@ export default function LoginPage() {
                   }}
                 >
                   <Typography
+                    variant="body2"
                     sx={{
                       cursor: "pointer",
                       "&:hover": {
                         textDecoration: "underline",
-                        color: "primary.main",
                       },
+                      color: "primary.main",
                     }}
                     onClick={() => navigate("/auth/forgot")}
                   >

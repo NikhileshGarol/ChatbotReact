@@ -111,7 +111,7 @@ export default function UserList() {
       showSnackbar("error", message);
       console.log(error);
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
   };
 
@@ -220,7 +220,7 @@ const columns: GridColDef[] = useMemo(
         return <span>{fullname}</span>;
       },
     },
-    { field: "email", headerName: "Email" },
+    { field: "email", headerName: "Email", width: 140, },
     { field: "contact_number", headerName: "Phone", width: 100 },
     {
       field: "role",
@@ -241,7 +241,7 @@ const columns: GridColDef[] = useMemo(
     {
       field: "actions",
       headerName: "Actions",
-      width: 100,
+      width: 90,
       sortable: false,
       renderCell: (params) => {
         const row = params.row;

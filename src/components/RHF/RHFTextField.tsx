@@ -9,6 +9,7 @@ type Props = {
   defaultValue?: any;
   disabled?: boolean;
   placeholder?: string;
+  required?: boolean;
 };
 
 export default function RHFTextField({
@@ -18,6 +19,7 @@ export default function RHFTextField({
   defaultValue = "",
   disabled = false,
   placeholder = "",
+  required = true,
 }: Props) {
   const { control } = useFormContext();
   return (
@@ -28,7 +30,7 @@ export default function RHFTextField({
       render={({ field, fieldState }) => (
         <>
           <Typography sx={{color: 'grey'}} variant="subtitle2">
-            {label} <span style={{ color: "#D32F2F" }}>*</span>
+            {label} {required && <span style={{ color: "#D32F2F" }}>*</span>}
           </Typography>
           <TextField
             {...field}

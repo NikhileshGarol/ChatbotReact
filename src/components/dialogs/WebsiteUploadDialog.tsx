@@ -142,7 +142,7 @@ export function WebsiteUploadDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <Button variant="outlined" onClick={handleClose} disabled={isLoading}>
           Cancel
         </Button>
         <Button

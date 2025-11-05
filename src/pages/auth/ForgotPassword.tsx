@@ -11,6 +11,7 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RHFPasswordField from "../../components/RHF/RHFPasswordField";
+import Logo from "../../assets/Stixis-logo-golden.png";
 
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -91,7 +92,7 @@ export default function ForgotPassword() {
     >
       <Paper
         sx={{
-          width: 420,
+          width: 480,
           p: 4,
           borderRadius: 3,
           boxShadow: 6,
@@ -100,17 +101,29 @@ export default function ForgotPassword() {
         }}
         elevation={4}
       >
-        <Box>
-          <Typography textAlign={"center"} variant="h6">
+        <Box sx={{ pb: 3 }}>
+          <Box
+            sx={{
+              width: "50%",
+              display: "flex",
+              justifyContent: "center",
+              mx: "auto",
+              pb: 3,
+            }}
+          >
+            <img
+              style={{ objectFit: "contain" }}
+              src={Logo}
+              alt="Logo"
+              id="logo"
+            ></img>
+          </Box>
+          <Typography fontWeight={"bold"} variant="h6">
             {step === "request" ? "Forgot Password" : "Reset Password"}
           </Typography>
-          <Typography
-            color="grey"
-            variant="body2"
-            textAlign={"center"}
-            gutterBottom
-          >
-            {step === "request" && "Enter registered Email to reset password"}
+          <Typography variant="body2" gutterBottom>
+            {step === "request" &&
+              "Enter your registered Email to reset password."}
           </Typography>
         </Box>
 
@@ -122,7 +135,31 @@ export default function ForgotPassword() {
                 name="email"
                 label="Email"
               />
-              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Box>
+                  <Typography variant="body2">
+                    Remember password?{" "}
+                    <Box component={'span'}
+                      sx={{
+                        cursor: "pointer",
+                        color: "#4191ecff",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                      onClick={() => navigate(-1)}
+                    >
+                      Sign in
+                    </Box>
+                  </Typography>
+                </Box>
                 <Button type="submit" variant="contained">
                   Send reset link
                 </Button>

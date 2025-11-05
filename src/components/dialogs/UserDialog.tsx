@@ -354,6 +354,7 @@ export default function UserDialog({
               </Grid>
               <Grid size={{ xs: 12, sm: 12 }}>
                 <RHFTextField
+                  required={false}
                   name="address"
                   label="Address"
                   placeholder="Address"
