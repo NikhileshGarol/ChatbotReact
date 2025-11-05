@@ -252,7 +252,7 @@ const FloatingChat: React.FC = () => {
       {/* Chatbot Toggle Button */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
+        className="fixed bottom-20 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#082757] text-white shadow-lg hover:bg-[#1f3b62] transition-colors"
       >
         <svg
           width="22"
@@ -272,7 +272,7 @@ const FloatingChat: React.FC = () => {
       {isOpen && (
         <div className="fixed top-17 bottom-0 right-0 z-999 flex max-h-dvh w-[35%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
           {/* Header */}
-          <div className="flex items-center justify-between relative bg-blue-500 p-3 text-center font-bold text-white">
+          <div className="flex items-center justify-between relative bg-[#082757] p-3 text-center font-bold text-white">
             <span>Chatbot</span>
             <button
               onClick={() => setIsOpen(false)}
@@ -306,23 +306,29 @@ const FloatingChat: React.FC = () => {
                 >
                   <Box sx={{ display: "flex", alignItems: "end", mx: 1 }}>
                     {chat.role === "bot" ? (
-                      <Avatar sx={{ height: "30px", width: "30px", bgcolor: 'primary.main' }}>
+                      <Avatar
+                        sx={{
+                          height: "30px",
+                          width: "30px",
+                          bgcolor: "primary.main",
+                        }}
+                      >
                         <SmartToyIcon />
                       </Avatar>
                     ) : (
                       <Avatar
                         sx={{ height: "30px", width: "30px" }}
-                        alt={
-                          user.display_name
+                        alt={user.display_name}
+                        src={
+                          profileImage || "http://www.gravatar.com/avatar/?d=mp"
                         }
-                        src={profileImage || 'http://www.gravatar.com/avatar/?d=mp'}
                       />
                     )}
                   </Box>
                   <div
                     className={`max-w-[85%] rounded-lg py-1 px-2 shadow ${
                       chat.role === "user"
-                        ? "bg-blue-500 text-white"
+                        ? "bg-[#082757] text-white"
                         : "bg-gray-200 text-black"
                     }`}
                   >
@@ -389,7 +395,7 @@ const FloatingChat: React.FC = () => {
               onChange={(e) => setUserQuery(e.target.value)}
               onKeyDown={handleKeyDown} // Handle Enter key
               placeholder="Type your message..."
-              className="rounded pr-20 flex-1 border border-gray-300 p-2 focus:outline-none focus:ring focus:ring-blue-300"
+              className="rounded pr-20 flex-1 border border-gray-300 p-2 focus:outline-none focus:ring focus:ring-[#082757]"
               disabled={isLoading}
             />
             {/* Microphone Button */}
@@ -457,7 +463,7 @@ const FloatingChat: React.FC = () => {
             </button> */}
             <button
               onClick={() => handleSendMessage()}
-              className="rounded rounded-l-none bg-blue-500 px-3 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center"
+              className="rounded rounded-l-none bg-[#082757] px-3 py-2 text-white hover:bg-[#1f3b62] disabled:bg-gray-400 flex items-center justify-center"
               disabled={isLoading}
               title="Send"
             >
