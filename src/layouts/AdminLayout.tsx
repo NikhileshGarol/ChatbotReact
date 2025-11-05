@@ -47,7 +47,7 @@ export default function AdminLayout({
         color="primary"
         sx={{
           zIndex: (t) => t.zIndex.drawer + 1,
-          background: "linear-gradient(90deg, #124d5eff 0%, #0b76ef 100%)",
+          // background: "linear-gradient(90deg, #124d5eff 0%, #0b76ef 100%)",
         }}
       >
         <Toolbar>

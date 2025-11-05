@@ -59,7 +59,7 @@ export default function Header() {
               borderBottom: "1px solid lightgrey",
             }}
           >
-            <Typography variant="body2"><AccountCircleIcon fontSize='small' /> My Profile</Typography>
+            <Typography variant="body2"><AccountCircleIcon sx={{mr: 0.7}} fontSize='small' /> My Profile</Typography>
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -70,7 +70,7 @@ export default function Header() {
               px: 2,
             }}
           >
-            <Typography variant="body2"><LogoutIcon fontSize='small' />Logout</Typography>
+            <Typography variant="body2"><LogoutIcon sx={{mr: 1}} fontSize='small' />Logout</Typography>
           </MenuItem>
         </Menu>
       </Box>

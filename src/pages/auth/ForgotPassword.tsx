@@ -149,7 +149,7 @@ export default function ForgotPassword() {
                     <Box component={'span'}
                       sx={{
                         cursor: "pointer",
-                        color: "#4191ecff",
+                        color: "primary.main",
                         "&:hover": {
                           textDecoration: "underline",
                         },

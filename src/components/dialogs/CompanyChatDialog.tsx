@@ -172,7 +172,7 @@ export default function CompanyChatDialog({
                   //   background: msg.isUser
                   //     ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
                   //     : undefined,#0b76ef
-                  background: msg.isUser ? "#0b76ef" : undefined,
+                  bgcolor: msg.isUser ? "primary.main" : undefined,
                   color: msg.isUser ? "white" : "inherit",
                 }}
               >

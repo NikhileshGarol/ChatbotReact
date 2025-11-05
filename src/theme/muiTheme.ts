@@ -2,8 +2,11 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#4191ecff" },
-    secondary: { main: "#0b9d74" },
+    // primary: { main: "#4191ecff" },
+    // secondary: { main: "#0b9d74" },
+
+    primary: { main: "#082757" },
+    secondary: { main: "#1f3b62" },
     background: { default: "#f4f6f8" },
     error: { main: "#D32F2F" },
   },
@@ -47,11 +50,14 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&.Mui-selected": {
-            backgroundColor: "#124d5eff",
+            // backgroundColor: "#124d5eff",
+            backgroundColor: "#082757",
+
             color: "#fff",
           },
           "&.Mui-selected:hover": {
-            backgroundColor: "#487199ff",
+            // backgroundColor: "rgba(72, 113, 153, 1)",
+            backgroundColor: "#1f3b62",
           },
         },
       },
@@ -64,6 +70,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiButton :{
+      styleOverrides: {
+        root: {
+          textTransform: 'capitalize'
+        }
+      }
+    }
   },
 });
 
