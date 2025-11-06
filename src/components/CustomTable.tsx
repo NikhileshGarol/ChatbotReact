@@ -1,13 +1,25 @@
 import { Box, Typography } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid";
 
 type Props = {
   gridRows: readonly any[];
   columns: readonly any[];
   isLoading?: boolean;
+  totalRows?: number; // ✅ Total records from API
+  onPageChange?: (page: number, pageSize: number) => void; // ✅ Callback to fetch data
+  page?: number;
+  pageSize?: number;
 };
 
-export default function CustomTable({ gridRows, columns, isLoading }: Props) {
+export default function CustomTable({
+  gridRows,
+  columns,
+  isLoading,
+  totalRows = 0,
+  onPageChange,
+  page = 0,
+  pageSize = 10,
+}: Props) {
   const CustomNoRowsOverlay = () => (
     <Box
       sx={{
@@ -44,6 +56,10 @@ export default function CustomTable({ gridRows, columns, isLoading }: Props) {
     };
   });
 
+  const handlePaginationChange = (model: GridPaginationModel) => {
+    onPageChange?.(model.page, model.pageSize);
+  };
+
   return (
     <Box
       sx={{
@@ -67,12 +83,16 @@ export default function CustomTable({ gridRows, columns, isLoading }: Props) {
       <DataGrid
         rows={gridRows}
         columns={adjustedColumns}
+        rowCount={totalRows}
         pageSizeOptions={[5, 10, 25]}
+        paginationModel={{ page, pageSize }}
+        paginationMode="server"
+        onPaginationModelChange={handlePaginationChange}
         disableRowSelectionOnClick
         loading={isLoading}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 10, page: 0 } },
-        }}
+        // initialState={{
+        //   pagination: { paginationModel: { pageSize: 10, page: 0 } },
+        // }}
         slots={{
           noRowsOverlay: CustomNoRowsOverlay, // Custom message for empty data
         }}

@@ -23,6 +23,29 @@ export type CompanyOut = {
   address: string;
 };
 
+export type CompanyListOut = {
+  items: [
+    {
+      id: number;
+      name: "string";
+      tenant_code: "string";
+      slug_url: "string";
+      widget_key: "string";
+      email: "string";
+      phone: "string";
+      website: "string";
+      address: "string";
+      city: "string";
+      state: "string";
+      country: "string";
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
 export type CompanyAdminCreatePayload = {
   tenant_code: string;
   display_name: string;
@@ -65,6 +88,33 @@ export type UserOut = {
   profile_image: string;
 };
 
+export type UserListOut = {
+  items: [
+    {
+      id: number;
+      display_name: "string";
+      user_code: "string";
+      role: "string";
+      api_key: "string";
+      email: "string";
+      firstname: "string";
+      lastname: "string";
+      contact_number: "string";
+      profile_image: "string";
+      company_name: "string";
+      address: "string";
+      city: "string";
+      state: "string";
+      country: "string";
+      is_active: true;
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
 export type UploadResponse = {
   id: number;
   filename: string;
@@ -81,6 +131,96 @@ export type DocumentOut = {
   uploader_id: number;
   num_chunks: number;
   error_message: string | null;
+};
+
+export type DocumentListOut = {
+  items: [
+    {
+      id: number;
+      filename: "string";
+      original_name: "string";
+      filepath: "string";
+      uploader_id: number;
+      user_code: "string";
+      user_name: "string";
+      company_name: "string";
+      num_chunks: number;
+      status: "string";
+      created_at: "string";
+      error_message: "string";
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
+export type SuperAdminDocumentListOut = {
+  items: [
+    {
+      id: number;
+      filename: "string";
+      original_name: "string";
+      filepath: "string";
+      uploader_id: number;
+      user_code: "string";
+      user_name: "string";
+      company_name: "string";
+      num_chunks: number;
+      status: "string";
+      created_at: "string";
+      error_message: "string";
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
+export type WebsiteListOut = {
+  items: [
+    {
+      id: number;
+      url: "string";
+      title: "string";
+      uploader_id: number;
+      user_code: "string";
+      user_name: "string";
+      company_name: "string";
+      num_chunks: number;
+      status: "string";
+      created_at: "string";
+      error_message: "string";
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
+export type SuperAdminWebsiteListOut = {
+  items: [
+    {
+      id: number;
+      url: "string";
+      title: "string";
+      uploader_id: number;
+      user_code: "string";
+      user_name: "string";
+      company_name: "string";
+      num_chunks: number;
+      status: "string";
+      created_at: "string";
+      error_message: "string";
+    }
+  ];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 };
 
 export type QueryRequest = {
@@ -109,6 +249,29 @@ export type ResetPassword = {
 export type FilterOption = {
   label: string;
   value: string;
+};
+
+export type UsersPageOptions = {
+  include_inactive: boolean;
+  page: number;
+  size: number;
+};
+
+export type PageOptions = {
+  page: number;
+  size: number;
+};
+
+export type DocumentsPageOptions = {
+  my_docs_only: string;
+  page: number;
+  size: number;
+};
+
+export type SuperAdminDocumentsPageOptions = {
+  tenant_code: string | undefined;
+  page: number;
+  size: number;
 };
 
 export type Roles = "superadmin" | "admin" | "user";

@@ -202,7 +202,7 @@ export default function UserDialog({
   const getAllCompanies = async () => {
     try {
       const response = await listCompanies();
-      setCompanyList(response);
+      setCompanyList(response.items);
     } catch (error) {
       console.log(error);
     }

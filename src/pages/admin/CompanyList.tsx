@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import { useEffect, useMemo, useState } from "react";
 import { Typography, Box, Button, IconButton, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -7,44 +6,58 @@ import ChatIcon from "@mui/icons-material/Chat";
 import WidgetsIcon from "@mui/icons-material/Widgets";
 import { type GridColDef, type GridRowsProp } from "@mui/x-data-grid";
 import { type Company } from "../../store/mockData";
-import CompanyDialog from "../../components/dialogs/CompanyDialog";
-import DeleteDialog from "../../components/dialogs/DeleteDialog";
-import CustomTable from "../../components/CustomTable";
+import type { CompanyCreatePayload, CompanyOut } from "../../services/types";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 import {
   createCompany,
   deleteCompanyDetails,
   listCompanies,
   updateCompanyDetails,
 } from "../../services/company.service";
-import type { CompanyCreatePayload, CompanyOut } from "../../services/types";
-import { useSnackbar } from "../../contexts/SnackbarContext";
-import { useEffectOnce } from "../../hooks/useEffectOnce";
+import AdminLayout from "../../layouts/AdminLayout";
+import CompanyDialog from "../../components/dialogs/CompanyDialog";
+import DeleteDialog from "../../components/dialogs/DeleteDialog";
+import CustomTable from "../../components/CustomTable";
 import WidgetConfigDialog from "../../components/dialogs/WidgetConfigDialog";
 import CompanyChatDialog from "../../components/dialogs/CompanyChatDialog";
 
 export default function CompanyList() {
+  const { showSnackbar } = useSnackbar();
+
   const [rows, setRows] = useState<CompanyOut[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState<Company | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(false);
+
   const [widgetConfigOpen, setWidgetConfigOpen] = useState(false);
   const [companyChatOpen, setCompanyChatOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyOut | null>(
     null
   );
-  const { showSnackbar } = useSnackbar();
 
-  useEffectOnce(() => {
-    refresh();
-  });
+  //-------------Handle SideEffects-----------------
 
-  const refresh = async () => {
+  useEffect(() => {
+    fetchCompanies();
+  }, [page, pageSize]);
+
+  // -------------------- API HANDLERS --------------------
+
+  const fetchCompanies = async () => {
     try {
       setLoading(true);
-      const response = await listCompanies();
-      setRows(response);
+      const response = await listCompanies({
+        page: page + 1,
+        size: pageSize,
+      });
+      setRows(response?.items);
+      setTotal(response?.total);
     } catch (error) {
       console.error(error);
     } finally {
@@ -56,15 +69,12 @@ export default function CompanyList() {
     try {
       setLoading(true);
       await createCompany(data);
-      refresh();
+      fetchCompanies();
       setOpenDialog(false);
       showSnackbar("success", "Company created successfully");
+      resetPageOptions();
     } catch (error: any) {
-      const message =
-        error?.response?.data?.detail ||
-        error?.message ||
-        "Something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -75,15 +85,11 @@ export default function CompanyList() {
     try {
       setLoading(true);
       await updateCompanyDetails(tenantCode, data);
-      refresh();
+      fetchCompanies();
       setOpenDialog(false);
       showSnackbar("success", "Company details updated successfully");
     } catch (error: any) {
-      const message =
-        error?.response?.data?.detail ||
-        error?.message ||
-        "Something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -95,32 +101,31 @@ export default function CompanyList() {
       await deleteCompanyDetails(data.tenant_code);
       setDeleteConfirmOpen(false);
       setToDelete(null);
-      refresh();
+      fetchCompanies();
       showSnackbar("success", "Company details updated successfully");
+      resetPageOptions();
     } catch (error: any) {
-      const message =
-        error?.response?.data?.detail ||
-        error?.message ||
-        "Something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleApiError = (error: any) => {
+    const message =
+      error?.response?.data?.detail || error?.message || "Something went wrong";
+    showSnackbar("error", message);
+  };
+
+  const resetPageOptions = () => {
+    setPage(0);
+  };
+
+  // -------------------- ACTION HANDLERS --------------------
+
   const handleAdd = () => {
     setEditing(null);
     setOpenDialog(true);
-  };
-
-  const handleOpenWidgetConfig = (company: any) => {
-    setSelectedCompany(company);
-    setWidgetConfigOpen(true);
-  };
-
-  const handleOpenCompanyChat = (company: any) => {
-    setSelectedCompany(company);
-    setCompanyChatOpen(true);
   };
 
   const handleEdit = (row: Company) => {
@@ -131,6 +136,16 @@ export default function CompanyList() {
   const handleDelete = (row: Company) => {
     setToDelete(row);
     setDeleteConfirmOpen(true);
+  };
+
+  const handleOpenWidgetConfig = (company: any) => {
+    setSelectedCompany(company);
+    setWidgetConfigOpen(true);
+  };
+
+  const handleOpenCompanyChat = (company: any) => {
+    setSelectedCompany(company);
+    setCompanyChatOpen(true);
   };
 
   const confirmDelete = (data: any) => {
@@ -146,6 +161,8 @@ export default function CompanyList() {
       handleAddCompany(data as any);
     }
   };
+
+  // -------------------- TABLE CONFIG --------------------
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -221,6 +238,8 @@ export default function CompanyList() {
 
   const gridRows: GridRowsProp = rows.map((r: any) => ({ id: r.id, ...r }));
 
+  // -------------------- RENDER --------------------
+
   return (
     <AdminLayout>
       <Box>
@@ -242,6 +261,13 @@ export default function CompanyList() {
           isLoading={loading}
           gridRows={gridRows}
           columns={columns}
+          totalRows={total}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={(newPage, newPageSize) => {
+            setPage(newPage);
+            setPageSize(newPageSize);
+          }}
         />
       </Box>
 

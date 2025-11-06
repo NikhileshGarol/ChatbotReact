@@ -1,13 +1,18 @@
 import { api } from "./api";
-import type { UserCreatePayload, UserOut } from "./types";
+import type {
+  UserCreatePayload,
+  UserListOut,
+  UserOut,
+  UsersPageOptions,
+} from "./types";
 
 export async function createUser(payload: UserCreatePayload) {
   const resp = await api.post<any>("/users", payload);
   return resp.data;
 }
 
-export async function listUsers() {
-  const resp = await api.get<UserOut[]>("/users");
+export async function listUsers(params?: UsersPageOptions) {
+  const resp = await api.get<UserListOut>("/users", { params });
   return resp.data;
 }
 

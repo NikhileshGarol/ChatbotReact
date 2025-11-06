@@ -3,7 +3,9 @@ import { api } from "./api";
 import type {
   CompanyAdminCreatePayload,
   CompanyCreatePayload,
+  CompanyListOut,
   CompanyOut,
+  PageOptions,
 } from "./types";
 
 export async function createCompany(payload: CompanyCreatePayload) {
@@ -11,8 +13,10 @@ export async function createCompany(payload: CompanyCreatePayload) {
   return resp.data;
 }
 
-export async function listCompanies() {
-  const resp = await api.get<CompanyOut[]>("/superadmin/companies");
+export async function listCompanies(params?: PageOptions) {
+  const resp = await api.get<CompanyListOut>("/superadmin/companies", {
+    params,
+  });
   return resp.data;
 }
 
@@ -48,8 +52,8 @@ export async function createCompanyAdmin(
   return resp.data;
 }
 
-export async function getCompanyAdmins() {
-  const resp = await api.get("/superadmin/companies/admins");
+export async function getCompanyAdmins(params?: PageOptions) {
+  const resp = await api.get("/superadmin/companies/admins", { params });
   return resp.data;
 }
 

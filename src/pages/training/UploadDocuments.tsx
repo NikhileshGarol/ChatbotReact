@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Typography,
@@ -12,13 +12,10 @@ import {
   Tab,
   Divider,
 } from "@mui/material";
-import UploadDialog from "../../components/training/UploadDialog";
-import { useAuth } from "../../contexts/AuthContext";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DeleteIcon from "@mui/icons-material/Delete";
-// import LogsDialog from "../../components/training/LogsDialog";
-// import PreviewDialog from "../../components/training/PreviewDialog";
-// import type { TrainingJob } from "../../store/trainingMock";
-import DeleteDialog from "../../components/dialogs/DeleteDialog";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   deleteDocument,
   deleteWebsite,
@@ -31,52 +28,58 @@ import {
   uploadWebsite,
 } from "../../services/training.service";
 import type { DocumentOut, FilterOption } from "../../services/types";
-import CustomTable from "../../components/CustomTable";
-import { GridDownloadIcon, type GridColDef } from "@mui/x-data-grid";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { listCompanies } from "../../services/company.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
 import formatDateLocal from "../../utils/formatDateLocal";
+import CustomTable from "../../components/CustomTable";
 import StatusCell from "../../components/StatusCell";
+import AdminLayout from "../../layouts/AdminLayout";
+import UploadDialog from "../../components/training/UploadDialog";
+import DeleteDialog from "../../components/dialogs/DeleteDialog";
 
 export default function UploadDocuments() {
   const { user } = useAuth();
+  const { showSnackbar } = useSnackbar();
+
   const isAdmin = user?.role === "admin";
   const isSuperAdmin = user?.role === "superadmin";
-  const { showSnackbar } = useSnackbar();
-  const [openUpload, setOpenUpload] = useState(false);
+
   const [docs, setDocs] = useState<DocumentOut[]>([]);
-  // const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
-  // const [logsOpen, setLogsOpen] = useState(false);
-  // const [previewDoc, setPreviewDoc] = useState<any>(null);
-  // const [previewOpen, setPreviewOpen] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<any>(null);
-  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
-  const [tabIndex, setTabIndex] = useState(0);
-  const [websites, setWebsites] = useState([]);
-  const [deleteType, setDeleteType] = useState<string | "document" | "website">(
-    ""
-  );
+  const [websites, setWebsites] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [openUpload, setOpenUpload] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [websiteDialogOpen, setWebsiteDialogOpen] = useState(false);
 
   const [scopeUserId, setScopeUserId] = useState<string | null>("all");
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([]);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [deleteType, setDeleteType] = useState<string | "document" | "website">(
+    ""
+  );
+
+  //--------------Default FilterOPtions-----------
 
   const UserFilerOptions = [
     { label: "Me", value: "me" },
     { label: "All Users", value: "all" },
   ];
 
+  //--------------Handle SideEffects--------------
+
   useEffectOnce(() => {
     async function fetchAndSetOptions() {
       if (isSuperAdmin) {
         const companies = await listCompanies();
-        const optionsFromCompanies = companies?.map((c: any) => ({
+        const optionsFromCompanies = companies?.items?.map((c: any) => ({
           label: c.name,
           value: c.tenant_code,
         }));
@@ -102,15 +105,23 @@ export default function UploadDocuments() {
         listAllUserDocs();
       }
     }
-  }, [tabIndex, scopeUserId]);
+  }, [tabIndex, scopeUserId, page, pageSize]);
+
+  //-------------------API Handlers------------------
 
   const listAllUserDocs = async () => {
     if (!user) return;
+    const myDocsOnly = scopeUserId === "all" ? "false" : "true";
+    const payload = {
+      my_docs_only: myDocsOnly,
+      page: page + 1,
+      size: pageSize,
+    };
     try {
       setLoading(true);
-      const myDocsOnly = scopeUserId === "all" ? "false" : "true";
-      const documents = await listDocuments({ my_docs_only: myDocsOnly });
-      setDocs(documents);
+      const documents = await listDocuments(payload);
+      setDocs(documents.items || []);
+      setTotal(documents.total || 0);
     } catch (error) {
       console.error(error);
     } finally {
@@ -122,12 +133,16 @@ export default function UploadDocuments() {
     const filter = scopeUserId === "all" ? "" : scopeUserId;
     const payload = {
       tenant_code: filter || undefined,
+      page: page + 1,
+      size: pageSize,
     };
     try {
       setLoading(true);
       const response = await listDocumentsSuperadmin(payload);
-      setDocs(response);
+      setDocs(response.items || []);
+      setTotal(response.total || 0);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -137,8 +152,13 @@ export default function UploadDocuments() {
     const myDocsOnly = scopeUserId === "all" ? "false" : "true";
     try {
       setLoading(true);
-      const response = await listWebsite({ my_docs_only: myDocsOnly });
-      setWebsites(response);
+      const response = await listWebsite({
+        my_docs_only: myDocsOnly,
+        page: page + 1,
+        size: pageSize,
+      });
+      setWebsites(response?.items || []);
+      setTotal(response?.total || 0);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -151,11 +171,14 @@ export default function UploadDocuments() {
     const filter = scopeUserId === "all" ? "" : scopeUserId;
     const payload = {
       tenant_code: filter || undefined,
+      page: page + 1,
+      size: pageSize,
     };
     try {
       setLoading(true);
       const response = await listWebsitesSuperadmin(payload);
-      setWebsites(response);
+      setWebsites(response.items || []);
+      setTotal(response.total || 0);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -165,12 +188,11 @@ export default function UploadDocuments() {
   };
 
   const handleWebsiteUpload = async (websiteUrl: string[]) => {
-    console.log(websiteUrl);
-    setIsLoading(true);
     const payload = {
       urls: websiteUrl,
     };
     try {
+      setIsLoading(true);
       await uploadWebsite(payload);
       showSnackbar("success", "Website scraped successfully");
       setIsLoading(false);
@@ -189,29 +211,6 @@ export default function UploadDocuments() {
     }
   };
 
-  const onUploaded = () => {
-    setTabIndex(0);
-    if (isSuperAdmin) {
-      listAllSuperadminDocs();
-    } else {
-      listAllUserDocs();
-    }
-  };
-
-  const handleDelete = (id: number, type: "document" | "website") => {
-    setOpenDeleteDialog(true);
-    setSelectedRow(id);
-    setDeleteType(type);
-  };
-
-  const confirmDelete = () => {
-    if (deleteType === "document") {
-      handleDeleteDocument();
-    } else {
-      handleDeletWebsite();
-    }
-  };
-
   const handleDeletWebsite = async () => {
     try {
       setLoading(true);
@@ -225,7 +224,6 @@ export default function UploadDocuments() {
       } else {
         fetchWebsites();
       }
-      console.log(resp);
     } catch (error: any) {
       const message = error.response.data.detail || "Something went wrong";
       console.error(error);
@@ -257,43 +255,6 @@ export default function UploadDocuments() {
     }
   };
 
-  // const handleStartTraining = (docId: string) => {
-  //   if (!user) return;
-  //   startTrainingForUser(user.id, [docId]);
-  //   listAllUserDocs();
-  // };
-
-  // const handleViewLogs = (jobId: string) => {
-  //   const job = getJobsForUser(undefined).find((j) => j.id === jobId) ?? null;
-  //   setSelectedJob(job);
-  //   setLogsOpen(true);
-  // };
-
-  // const handlePreview = (doc: any) => {
-  //   setPreviewDoc(doc);
-  //   setPreviewOpen(true);
-  // };
-
-  const refreshList = () => {
-    if (isSuperAdmin) {
-      if (tabIndex === 0) {
-        listAllSuperadminDocs();
-      } else if (tabIndex === 1) {
-        listSuperadminWeb();
-      }
-    } else {
-      if (tabIndex === 0) {
-        listAllUserDocs();
-      } else {
-        fetchWebsites();
-      }
-    }
-  };
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-  };
-
   const handleDownload = async (row: any) => {
     try {
       let response;
@@ -321,10 +282,58 @@ export default function UploadDocuments() {
     }
   };
 
+  //---------------Astion Handlers-------------------
+
+  const onUploaded = () => {
+    setTabIndex(0);
+    if (isSuperAdmin) {
+      listAllSuperadminDocs();
+    } else {
+      listAllUserDocs();
+    }
+  };
+
+  const handleDelete = (id: number, type: "document" | "website") => {
+    setOpenDeleteDialog(true);
+    setSelectedRow(id);
+    setDeleteType(type);
+  };
+
+  const confirmDelete = () => {
+    if (deleteType === "document") {
+      handleDeleteDocument();
+    } else {
+      handleDeletWebsite();
+    }
+  };
+
+  const refreshList = () => {
+    if (isSuperAdmin) {
+      if (tabIndex === 0) {
+        listAllSuperadminDocs();
+      } else if (tabIndex === 1) {
+        listSuperadminWeb();
+      }
+    } else {
+      if (tabIndex === 0) {
+        listAllUserDocs();
+      } else {
+        fetchWebsites();
+      }
+    }
+  };
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+    setPage(0);
+  };
+
   const handleOpenWebLink = (row: any) => {
     if (!row || !row.url) return;
     window.open(row.url, "_blank", "noopener,noreferrer");
   };
+
+  // -------------------- TABLE CONFIG --------------------
 
   const columns: GridColDef[] = [
     {
@@ -532,6 +541,13 @@ export default function UploadDocuments() {
               isLoading={loading}
               gridRows={docs}
               columns={columns}
+              totalRows={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={(newPage, newPageSize) => {
+                setPage(newPage);
+                setPageSize(newPageSize);
+              }}
             />
           )}
           {tabIndex === 1 && (
@@ -539,6 +555,13 @@ export default function UploadDocuments() {
               isLoading={loading}
               gridRows={websites}
               columns={websiteColumns}
+              totalRows={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={(newPage, newPageSize) => {
+                setPage(newPage);
+                setPageSize(newPageSize);
+              }}
             />
           )}
         </Box>
@@ -548,11 +571,6 @@ export default function UploadDocuments() {
         onClose={() => setOpenUpload(false)}
         onUploaded={onUploaded}
       />
-      {/* <LogsDialog
-        open={logsOpen}
-        job={selectedJob ?? undefined}
-        onClose={() => setLogsOpen(false)}
-      /> */}
       <DeleteDialog
         open={openDeleteDialog}
         title={`${deleteType === "document" ? "File" : "Website"}`}

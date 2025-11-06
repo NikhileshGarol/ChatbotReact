@@ -1,14 +1,11 @@
-import { useMemo, useRef, useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Typography, Box, Button, IconButton, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { type GridColDef, type GridRowsProp } from "@mui/x-data-grid";
-import { type User } from "../../store/mockData";
-import UserDialog from "../../components/dialogs/UserDialog";
-import CustomTable from "../../components/CustomTable";
-import DeleteDialog from "../../components/dialogs/DeleteDialog";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSnackbar } from "../../contexts/SnackbarContext";
+import { type User } from "../../store/mockData";
 import {
   createUser,
   deleteUser,
@@ -21,37 +18,51 @@ import {
   getCompanyAdmins,
   updateAdmin,
 } from "../../services/company.service";
-import { useSnackbar } from "../../contexts/SnackbarContext";
-import { useEffectOnce } from "../../hooks/useEffectOnce";
+import AdminLayout from "../../layouts/AdminLayout";
+import UserDialog from "../../components/dialogs/UserDialog";
+import CustomTable from "../../components/CustomTable";
+import DeleteDialog from "../../components/dialogs/DeleteDialog";
 
 export default function UserList() {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
+
   const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+
   const isSuperAdmin = user?.role === "superadmin";
-  const calledRef = useRef(false);
 
-  useEffectOnce(() => {
-    if (calledRef.current) return;
-    calledRef.current = true;
+  //----------------Handle SideEffects------------
 
+  useEffect(() => {
     if (isSuperAdmin) {
       listAllAdminUsers();
     } else {
-      refresh();
+      listAllUsers();
     }
-  });
+  }, [page, pageSize]);
 
-  const refresh = async () => {
+  //--------------API HANDLERS---------------
+
+  const listAllUsers = async () => {
+    const payload = {
+      include_inactive: false,
+      page: page + 1,
+      size: pageSize,
+    };
     try {
       setLoading(true);
-      const resp = await listUsers();
-      setRows(resp);
+      const resp = await listUsers(payload);
+      setRows(resp.items || []);
+      setTotal(resp.total || 0);
     } catch (error) {
       console.error(error);
     } finally {
@@ -60,10 +71,15 @@ export default function UserList() {
   };
 
   const listAllAdminUsers = async () => {
+    const payload = {
+      page: page + 1,
+      size: pageSize,
+    };
     try {
       setLoading(true);
-      const resp = await getCompanyAdmins();
-      setRows(resp);
+      const resp = await getCompanyAdmins(payload);
+      setRows(resp?.items || []);
+      setTotal(resp?.total || 0);
     } catch (error) {
       console.error(error);
     } finally {
@@ -80,14 +96,12 @@ export default function UserList() {
     try {
       setLoading(true);
       await createUser(payload);
-      // setRows(response);
       showSnackbar("success", "User created successfully");
       setOpenDialog(false);
-      refresh();
+      listAllUsers();
+      setPage(0);
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
-      console.log(error);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -101,14 +115,13 @@ export default function UserList() {
     };
     try {
       setLoading(true);
-      const response = await createCompanyAdmin(tenantCode, payload);
-      setRows(response);
+      await createCompanyAdmin(tenantCode, payload);
       showSnackbar("success", "User created successfully");
       setOpenDialog(false);
       listAllAdminUsers();
+      setPage(0);
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
       console.log(error);
     } finally {
       setLoading(false);
@@ -121,10 +134,9 @@ export default function UserList() {
       await updateUserById(data.id, data);
       showSnackbar("success", "User details update successfully");
       setOpenDialog(false);
-      refresh();
+      listAllUsers();
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -138,8 +150,7 @@ export default function UserList() {
       setOpenDialog(false);
       listAllAdminUsers();
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -152,10 +163,9 @@ export default function UserList() {
       showSnackbar("success", "User deleted successfully");
       setDeleteConfirmOpen(false);
       setToDelete(null);
-      refresh();
+      listAllUsers();
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -170,12 +180,19 @@ export default function UserList() {
       setToDelete(null);
       listAllAdminUsers();
     } catch (error: any) {
-      const message = error?.response?.data?.detail || "something went wrong";
-      showSnackbar("error", message);
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleApiError = (error: any) => {
+    const message =
+      error?.response?.data?.detail || error?.message || "Something went wrong";
+    showSnackbar("error", message);
+  };
+
+  // -------------------- ACTION HANDLERS --------------------
 
   const handleAdd = () => {
     setEditing(null);
@@ -201,120 +218,135 @@ export default function UserList() {
     }
   };
 
-const handleSave = (data: any) => {
-  console.log(data)
-  if (editing) {
-    return isSuperAdmin ? handleUpdateAdmin(data) : handleUpdateUser(data);
-  }
+  const handleSave = (data: any) => {
+    console.log(data);
+    if (editing) {
+      return isSuperAdmin ? handleUpdateAdmin(data) : handleUpdateUser(data);
+    }
 
-  return isSuperAdmin ? handleCreateAdminUser(data) : handleCreateUser(data);
-};
+    return isSuperAdmin ? handleCreateAdminUser(data) : handleCreateUser(data);
+  };
 
-const columns: GridColDef[] = useMemo(
-  () => [
-    {
-      field: "name",
-      headerName: "Name",
-      renderCell: (params) => {
-        const fullname = params.row.firstname + " " + params.row.lastname;
-        return <span>{fullname}</span>;
+  // -------------------- TABLE CONFIG --------------------
+
+  const columns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: "name",
+        headerName: "Name",
+        renderCell: (params) => {
+          const fullname = params.row.firstname + " " + params.row.lastname;
+          return <span>{fullname}</span>;
+        },
       },
-    },
-    { field: "email", headerName: "Email", width: 140, },
-    { field: "contact_number", headerName: "Phone", width: 100 },
-    {
-      field: "role",
-      headerName: "Role",
-      width: 100,
-      renderCell: (params: any) => {
-        const value = params.row.role;
-        return <span style={{ textTransform: "capitalize" }}>{value}</span>;
+      { field: "email", headerName: "Email", width: 140 },
+      { field: "contact_number", headerName: "Phone", width: 100 },
+      {
+        field: "role",
+        headerName: "Role",
+        width: 100,
+        renderCell: (params: any) => {
+          const value = params.row.role;
+          return <span style={{ textTransform: "capitalize" }}>{value}</span>;
+        },
       },
-    },
-    {
-      field: "company_name",
-      headerName: "Company",
-      width: 122,
-    },
-    { field: "city", headerName: "City" },
-    { field: "address", headerName: "Address" },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 90,
-      sortable: false,
-      renderCell: (params) => {
-        const row = params.row;
-        return (
-          <Box sx={{ display: "flex", mt: "5px" }}>
-            <IconButton
-              title="Edit User details"
-              color="primary"
-              size="small"
-              onClick={() => handleEdit(row)}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
-            />
-            <IconButton
-              title="Delete User"
-              color="primary"
-              size="small"
-              onClick={() => handleDelete(row)}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        );
+      {
+        field: "company_name",
+        headerName: "Company",
+        width: 122,
       },
-    },
-  ],
-  []
-);
+      { field: "city", headerName: "City" },
+      { field: "address", headerName: "Address" },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 90,
+        sortable: false,
+        renderCell: (params) => {
+          const row = params.row;
+          return (
+            <Box sx={{ display: "flex", mt: "5px" }}>
+              <IconButton
+                title="Edit User details"
+                color="primary"
+                size="small"
+                onClick={() => handleEdit(row)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ mx: "2px", mt: 1, borderColor: "grey.300" }}
+              />
+              <IconButton
+                title="Delete User"
+                color="primary"
+                size="small"
+                onClick={() => handleDelete(row)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          );
+        },
+      },
+    ],
+    []
+  );
 
-const gridRows: GridRowsProp = Array.isArray(rows)
-  ? rows.map((r) => ({ id: r.id, ...r }))
-  : [];
+  const gridRows: GridRowsProp = Array.isArray(rows)
+    ? rows.map((r) => ({ id: r.id, ...r }))
+    : [];
 
-return (
-  <AdminLayout>
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h6">Users</Typography>
-        <Button variant="contained" onClick={handleAdd}>
-          Add user
-        </Button>
+  // -------------------- RENDER --------------------
+
+  return (
+    <AdminLayout>
+      <Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6">Users</Typography>
+          <Button variant="contained" onClick={handleAdd}>
+            Add user
+          </Button>
+        </Box>
+        <CustomTable
+          isLoading={loading}
+          gridRows={gridRows}
+          columns={columns}
+          totalRows={total}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={(newPage, newPageSize) => {
+            setPage(newPage);
+            setPageSize(newPageSize);
+          }}
+        />
       </Box>
-      <CustomTable isLoading={loading} gridRows={gridRows} columns={columns} />
-    </Box>
 
-    <UserDialog
-      open={openDialog}
-      onClose={() => setOpenDialog(false)}
-      onSave={handleSave}
-      initial={editing}
-      loading={loading}
-    />
+      <UserDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSave}
+        initial={editing}
+        loading={loading}
+      />
 
-    <DeleteDialog
-      open={deleteConfirmOpen}
-      onClose={() => setDeleteConfirmOpen(false)}
-      onConfirm={(data) => confirmDelete(data)}
-      data={toDelete}
-      title={isSuperAdmin ? "Admin" : "User"}
-      loading={loading}
-    />
-  </AdminLayout>
-);
+      <DeleteDialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={(data) => confirmDelete(data)}
+        data={toDelete}
+        title={isSuperAdmin ? "Admin" : "User"}
+        loading={loading}
+      />
+    </AdminLayout>
+  );
 }
