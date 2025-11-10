@@ -564,12 +564,16 @@ export default function UploadDocuments() {
                 value={scopeUserId || "all"}
                 onChange={(e) => setScopeUserId(e.target.value as any)}
                 MenuProps={{
-                  PaperProps: { sx: { maxHeight: 380, maxWidth: 150 } },
+                  PaperProps: { sx: { maxHeight: 380, maxWidth: 200 } },
                 }}
               >
                 {isSuperAdmin && <MenuItem value="all">All</MenuItem>}
                 {filterOptions?.map((item) => (
-                  <MenuItem key={item.value} value={item.value}>
+                  <MenuItem
+                    sx={{ whiteSpace: "pre-wrap", borderBottom: '1px solid lightgrey' }}
+                    key={item.value}
+                    value={item.value}
+                  >
                     {item.label}
                   </MenuItem>
                 ))}
