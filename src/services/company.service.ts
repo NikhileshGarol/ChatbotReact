@@ -3,6 +3,7 @@ import { api } from "./api";
 import type {
   CompanyAdminCreatePayload,
   CompanyCreatePayload,
+  CompanyListAllFilter,
   CompanyListOut,
   CompanyOut,
   PageOptions,
@@ -17,6 +18,11 @@ export async function listCompanies(params?: PageOptions) {
   const resp = await api.get<CompanyListOut>("/superadmin/companies", {
     params,
   });
+  return resp.data;
+}
+
+export async function listAllCompaniesFilter() {
+  const resp = await api.get<CompanyListAllFilter>("/superadmin/companies/all");
   return resp.data;
 }
 

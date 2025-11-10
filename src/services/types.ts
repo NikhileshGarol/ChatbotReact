@@ -46,6 +46,14 @@ export type CompanyListOut = {
   pages: number;
 };
 
+export type CompanyListAllFilter = [
+  {
+    id: number;
+    name: string;
+    tenant_code: string;
+  }
+];
+
 export type CompanyAdminCreatePayload = {
   tenant_code: string;
   display_name: string;
@@ -272,6 +280,10 @@ export type SuperAdminDocumentsPageOptions = {
   tenant_code: string | undefined;
   page: number;
   size: number;
+};
+
+export type RetryUploadDocs = {
+  document_ids: number[];
 };
 
 export type Roles = "superadmin" | "admin" | "user";

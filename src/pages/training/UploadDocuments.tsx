@@ -26,11 +26,12 @@ import {
   downloadDocSuperadmin,
   downloadDocUser,
   uploadWebsite,
+  retryUploadDocs,
 } from "../../services/training.service";
 import type { DocumentOut, FilterOption } from "../../services/types";
 import { WebsiteUploadDialog } from "../../components/dialogs/WebsiteUploadDialog";
 import { useSnackbar } from "../../contexts/SnackbarContext";
-import { listCompanies } from "../../services/company.service";
+import { listAllCompaniesFilter } from "../../services/company.service";
 import { useEffectOnce } from "../../hooks/useEffectOnce";
 import formatDateLocal from "../../utils/formatDateLocal";
 import CustomTable from "../../components/CustomTable";
@@ -78,8 +79,8 @@ export default function UploadDocuments() {
   useEffectOnce(() => {
     async function fetchAndSetOptions() {
       if (isSuperAdmin) {
-        const companies = await listCompanies();
-        const optionsFromCompanies = companies?.items?.map((c: any) => ({
+        const companies = await listAllCompaniesFilter();
+        const optionsFromCompanies = companies?.map((c: any) => ({
           label: c.name,
           value: c.tenant_code,
         }));
@@ -193,10 +194,13 @@ export default function UploadDocuments() {
     };
     try {
       setIsLoading(true);
-      await uploadWebsite(payload);
-      showSnackbar("success", "Website scraped successfully");
-      setIsLoading(false);
+      const resp = await uploadWebsite(payload);
       setWebsiteDialogOpen(false);
+      if (resp.errors.length > 0) {
+        showSnackbar("error", resp.errors[0].error);
+      } else {
+        showSnackbar("success", "Website scraped successfully");
+      }
       if (isSuperAdmin) {
         listSuperadminWeb();
       } else {
@@ -333,6 +337,30 @@ export default function UploadDocuments() {
     window.open(row.url, "_blank", "noopener,noreferrer");
   };
 
+  const handleRetryUpload = async (row: any) => {
+    const id = row.id;
+    const payload = {
+      document_ids: [id],
+    };
+    try {
+      const resp = await retryUploadDocs(payload);
+      if (resp.retried_count > 0) {
+        showSnackbar("success", "Attempting to re-upload the document.");
+      }
+      if (resp.skipped_count > 0) {
+        showSnackbar("error", resp.skipped[0].reason);
+      }
+      refreshList();
+      console.log(resp.skipped[0].reason);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRetryScrapeWeb = (row: any) => {
+    handleWebsiteUpload([row.url]);
+  };
+
   // -------------------- TABLE CONFIG --------------------
 
   const columns: GridColDef[] = [
@@ -361,7 +389,21 @@ export default function UploadDocuments() {
       renderCell: (params) => {
         const row = params.row.status;
         const errorMsg = params.row.error_message;
-        return <StatusCell status={row} errorReason={errorMsg} />;
+        return (
+          <Box sx={{ display: "flex", mt: "5px" }}>
+            <StatusCell status={row} errorReason={errorMsg} />
+            {errorMsg && (
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => handleRetryUpload(params.row)}
+                title="Refresh List"
+              >
+                <RefreshIcon />
+              </IconButton>
+            )}
+          </Box>
+        );
       },
     },
     {
@@ -434,7 +476,21 @@ export default function UploadDocuments() {
       renderCell: (params) => {
         const row = params.row.status;
         const errorMsg = params.row.error_message;
-        return <StatusCell status={row} errorReason={errorMsg} />;
+        return (
+          <Box sx={{ display: "flex", mt: "5px" }}>
+            <StatusCell status={row} errorReason={errorMsg} />
+            {errorMsg && (
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => handleRetryScrapeWeb(params.row)}
+                title="Refresh List"
+              >
+                <RefreshIcon />
+              </IconButton>
+            )}
+          </Box>
+        );
       },
     },
     {

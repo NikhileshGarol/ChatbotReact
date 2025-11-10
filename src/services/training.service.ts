@@ -11,6 +11,7 @@ import type {
   SuperAdminDocumentListOut,
   WebsiteListOut,
   SuperAdminWebsiteListOut,
+  RetryUploadDocs,
 } from "./types";
 
 export async function uploadDocument(files: File[]) {
@@ -87,6 +88,11 @@ export async function downloadDocUser(id: number) {
   const resp = await api.get(`/documents/${id}/download`, {
     responseType: "blob",
   });
+  return resp.data;
+}
+
+export async function retryUploadDocs(id: RetryUploadDocs) {
+  const resp = await api.post("documents/retry", id);
   return resp.data;
 }
  
