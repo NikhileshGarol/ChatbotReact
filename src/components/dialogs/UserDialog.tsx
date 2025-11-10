@@ -19,6 +19,7 @@ import RHFSelectField from "../RHF/RHFSelectField";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   getCompanyAdminById,
+  listAllCompaniesFilter,
   listCompanies,
 } from "../../services/company.service";
 import { City, Country, State } from "country-state-city";
@@ -201,8 +202,8 @@ export default function UserDialog({
 
   const getAllCompanies = async () => {
     try {
-      const response = await listCompanies();
-      setCompanyList(response.items);
+      const response = await listAllCompaniesFilter();
+      setCompanyList(response);
     } catch (error) {
       console.log(error);
     }

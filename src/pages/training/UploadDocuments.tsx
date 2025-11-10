@@ -397,7 +397,7 @@ export default function UploadDocuments() {
                 size="small"
                 color="primary"
                 onClick={() => handleRetryUpload(params.row)}
-                title="Refresh List"
+                title="Retry Upload"
               >
                 <RefreshIcon />
               </IconButton>
@@ -484,7 +484,7 @@ export default function UploadDocuments() {
                 size="small"
                 color="primary"
                 onClick={() => handleRetryScrapeWeb(params.row)}
-                title="Refresh List"
+                title="Retry Scraping"
               >
                 <RefreshIcon />
               </IconButton>
