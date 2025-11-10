@@ -558,11 +558,14 @@ export default function UploadDocuments() {
           <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <Typography>
-                {isSuperAdmin ? "Filter by Compnay" : "Filter by User"}
+                {isSuperAdmin ? "Filter by Company" : "Filter by User"}
               </Typography>
               <Select
                 value={scopeUserId || "all"}
                 onChange={(e) => setScopeUserId(e.target.value as any)}
+                MenuProps={{
+                  PaperProps: { sx: { maxHeight: 380, maxWidth: 150 } },
+                }}
               >
                 {isSuperAdmin && <MenuItem value="all">All</MenuItem>}
                 {filterOptions?.map((item) => (

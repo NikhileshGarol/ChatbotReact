@@ -20,7 +20,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   getCompanyAdminById,
   listAllCompaniesFilter,
-  listCompanies,
 } from "../../services/company.service";
 import { City, Country, State } from "country-state-city";
 import { getUserById } from "../../services/user.service";

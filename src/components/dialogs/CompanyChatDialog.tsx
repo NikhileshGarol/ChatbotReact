@@ -40,7 +40,7 @@ export default function CompanyChatDialog({
   const { user, profileImage } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
-      content: `Hi! I'm connected to ${companyName}'s knowledge base. Ask me anything about their documents and websites.`,
+      content: `Hello, I am your AI Assistant, you can ask me anything about ${companyName} and its services.`,
       isUser: false,
     },
   ]);
