@@ -70,13 +70,13 @@ const theme = createTheme({
         },
       },
     },
-    MuiButton :{
+    MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'capitalize'
-        }
-      }
-    }
+          textTransform: "capitalize",
+        },
+      },
+    },
   },
 });
 

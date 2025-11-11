@@ -4,6 +4,7 @@ import { queryPost } from "../services/training.service";
 import { Avatar, Box } from "@mui/material";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { useAuth } from "../contexts/AuthContext";
+import SendIcon from "@mui/icons-material/Send";
 
 declare global {
   interface Window {
@@ -270,7 +271,14 @@ const FloatingChat: React.FC = () => {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed top-17 bottom-0 right-0 z-999 flex max-h-dvh w-[35%] flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg">
+        <div
+          className="
+    fixed top-17 bottom-0 right-0 z-[999]
+    flex flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg
+    max-h-dvh
+    w-full sm:w-[80%] md:w-[50%] lg:w-[35%]
+  "
+        >
           {/* Header */}
           <div className="flex items-center justify-between relative bg-[#082757] p-3 text-center font-bold text-white">
             <span>Chatbot</span>
@@ -388,7 +396,7 @@ const FloatingChat: React.FC = () => {
           </div>
 
           {/* Input Area */}
-          <div className="flex border-t border-gray-300 bg-white p-3">
+          <div className="flex border-t border-gray-300 bg-white p-3 gap-3">
             <input
               type="text"
               value={userQuery}
@@ -463,11 +471,11 @@ const FloatingChat: React.FC = () => {
             </button> */}
             <button
               onClick={() => handleSendMessage()}
-              className="rounded rounded-l-none bg-[#082757] px-3 py-2 text-white hover:bg-[#1f3b62] disabled:bg-gray-400 flex items-center justify-center"
-              disabled={isLoading}
+              className="rounded-full bg-[#082757] px-2 py-2 text-white hover:bg-[#1f3b62] hover:cursor-pointer disabled:bg-gray-400 flex items-center justify-center"
+              disabled={isLoading || !userQuery.trim()}
               title="Send"
             >
-              <svg
+              {/* <svg
                 width="22"
                 height="22"
                 viewBox="0 0 24 24"
@@ -479,7 +487,8 @@ const FloatingChat: React.FC = () => {
               >
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
+              </svg> */}
+              <SendIcon />
             </button>
           </div>
         </div>

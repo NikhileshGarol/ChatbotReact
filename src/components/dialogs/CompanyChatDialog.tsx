@@ -235,10 +235,10 @@ export default function CompanyChatDialog({
             disabled={loading || !input.trim()}
             color="primary"
             sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              bgcolor: "primary.main",
               color: "white",
               "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                bgcolor: "secondary.main",
               },
               "&:disabled": {
                 background: "#ccc",

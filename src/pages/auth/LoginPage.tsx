@@ -107,6 +107,23 @@ export default function LoginPage() {
               <img src={Logo} alt="Logo" id="logo"></img>
             </Box>
           </Grid>
+          {/* Display Logo in center while mobile screen */}
+          <Box
+            sx={{
+              width: "50%",
+              display: { xs: "flex", sm: "none" },
+              justifyContent: "center",
+              mx: "auto",
+              pt: 4,
+            }}
+          >
+            <img
+              style={{ objectFit: "contain" }}
+              src={Logo}
+              alt="Logo"
+              id="logo"
+            ></img>
+          </Box>
           {/* Login Form on right */}
           <Grid
             size={{ xs: 12, sm: 7 }}
